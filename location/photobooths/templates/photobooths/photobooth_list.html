@@ -1,0 +1,233 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-5 fw-bold text-center display-5 text-gradient">{% trans "Découvrez nos Photobooths et accessoires" %}</h2>
+
+    <!-- Filtres de recherche -->
+    <form method="get" class="row g-3 mb-5 align-items-end bg-white p-4 rounded shadow-sm">
+        <div class="col-md-4">
+            <label class="form-label">{% trans "Recherche" %}</label>
+            <input type="text" name="q" class="form-control shadow-sm" placeholder="Nom ou description..." value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">{% trans "Prix max (€)" %}</label>
+            <input type="number" name="max_price" class="form-control shadow-sm" value="{{ request.GET.max_price }}">
+        </div>
+        <div class="col-md-3">
+            <div class="form-check mt-4 pt-2">
+                <input class="form-check-input" type="checkbox" name="available" value="1" {% if request.GET.available %}checked{% endif %}>
+                <label class="form-check-label">{% trans "Disponibles uniquement" %}</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-gradient w-100 shadow-sm">
+                <i class="bi bi-search"></i> {% trans "Filtrer" %}
+            </button>
+        </div>
+    </form>
+
+    <!-- Liste des photobooths -->
+    <div class="row">
+        {% for photobooth in photobooths %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative h-100 hover-zoom">
+
+                    {% if photobooth.image %}
+                        <a href="{% url 'photobooth_detail' photobooth.id %}">
+                            <img src="{{ photobooth.image.url }}" class="card-img-top object-fit-cover" style="height: 250px;" alt="{{ photobooth.name }}">
+                        </a>
+                    {% else %}
+                        <a href="{% url 'photobooth_detail' photobooth.id %}">
+                            <img src="{% static 'images/photobooth_default.jpg' %}" class="card-img-top object-fit-cover" style="height: 250px;" alt="Image par défaut">
+                        </a>
+                    {% endif %}
+
+                    <span class="position-absolute top-0 start-0 m-2 badge 
+                        {% if photobooth.available %}
+                            bg-primary text-warning
+                        {% else %}
+                            bg-secondary text-dark
+                        {% endif %} rounded-pill px-3 py-2 fs-6">
+                        {% if photobooth.available %}✅ {% trans "Disponible" %}{% else %}❌ {% trans "Indisponible" %}{% endif %}
+                    </span>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-semibold">{{ photobooth.name }}</h5>
+                        <p class="small">{{ photobooth.description }}</p>
+                        <p class="fw-bold fs-5 text-gradient">{{ photobooth.price }} €</p>
+
+                        {% if photobooth.available %}
+                            <form method="post" action="{% url 'add_to_cart' photobooth.id %}" class="mt-2">
+                                {% csrf_token %}
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label small">{% trans "Début" %}</label>
+                                        <input type="date" name="start_date" class="form-control" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small">{% trans "Fin" %}</label>
+                                        <input type="date" name="end_date" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <label class="form-label small">{% trans "Quantité" %}</label>
+                                    <input type="number" name="quantite" value="1" min="1" max="{{ photobooth.available }}" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-gradient w-100 mt-3">
+                                    <i class="bi bi-cart-plus"></i> {% trans "Ajouter au panier" %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning text-center mt-3 d-flex flex-column align-items-center py-3">
+                                <i class="bi bi-hourglass-split fs-3 spin-slow text-warning mb-2"></i>
+                                <strong class="text-dark mb-2">{% trans "Ce photobooth est indisponible" %}</strong>
+                                <form method="post" action="{% url 'notify_me' photobooth.id %}" class="w-100">
+                                    {% csrf_token %}
+                                    <input type="email" name="email" class="form-control form-control-sm mb-2" placeholder="Votre email pour être alerté" required>
+                                    <button type="submit" class="btn btn-sm btn-outline-gold w-100">
+                                        <i class="bi bi-bell"></i> {% trans "Prévenez-moi" %}
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+
+                        <a href="{% url 'photobooth_detail' photobooth.id %}" class="btn btn-link mt-3">{% trans "Voir les détails" %}</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-white">{% trans "Aucun photobooth ne correspond à vos critères." %}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+<nav class="mt-5" aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.available %}available=1&{% endif %}page={{ page_obj.previous_page_number }}">
+                    {% trans "← Précédent" %}
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link"> {% trans "← Précédent" %}</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.available %}available=1&{% endif %}page={{ num }}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.available %}available=1&{% endif %}page={{ page_obj.next_page_number }}">
+                    {% trans "Suivant →" %}
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">{% trans "Suivant →" %}</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+</div>
+
+<style>
+    /* Dégradé bleu → doré */
+    .text-gradient {
+        background: linear-gradient(to right, #5B6E9D, #B08824);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #5B6E9D, #B08824);
+        border: none;
+        color: white;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(to right, #3a4b7c, #e0a800);
+        color: white;
+    }
+
+    .btn-outline-gold {
+        border: 1px solid #B08824;
+        color: #B08824;
+    }
+
+    .btn-outline-gold:hover {
+        background: #B08824;
+        color: #000;
+    }
+
+    .hover-zoom:hover {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+
+    .spin-slow {
+        animation: spin 2.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .form-control,
+    .btn,
+    .card {
+        border-radius: 0.75rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #B08824;
+    }
+
+    .btn:focus,
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(91, 110, 157, 0.25);
+    }
+
+    /* Texte des descriptions en blanc */
+    .card-body p {
+        color: #0a0a0a !important;
+    }
+
+    /* Champs date responsive */
+    input[type="date"] {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #495057;
+        background-color: #212529;
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+        .row.g-2 > div {
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Mentions légales - IdealBooth{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Mentions légales</h1>
+
+    <h3>1. Éditeur du site</h3>
+    <p>
+        <strong>IdealBooth</strong><br>
+        Raison sociale : IdealBooth SAS<br>
+        Adresse : 123 Rue des Lumières, 6000 Charleroi, Belgique<br>
+        Email : <a href="mailto:bpgloire@gmail.com">bpgloire@gmail.com</a><br>
+        Téléphone : +32 465 28 86 47 <br>
+        SIRET : 123 456 789 00010<br>
+        Directeur de la publication : M. Gloire Bopete W'Engulu Isungandi
+    </p>
+
+    <h3>2. Hébergeur</h3>
+    <p>
+        <strong>OVH SAS</strong><br>
+        2 rue Kellermann – 59100 Roubaix – France<br>
+        Téléphone : 1007<br>
+        Site web : <a href="https://www.ovh.com" target="_blank">www.ovh.com</a>
+    </p>
+
+    <h3>3. Propriété intellectuelle</h3>
+    <p>
+        Le site <strong>IdealBooth</strong> ainsi que l’ensemble de ses contenus (textes, images, graphismes, logo, vidéos, etc.)
+        sont la propriété exclusive d’IdealBooth ou de ses partenaires, et sont protégés par les lois en vigueur sur la propriété intellectuelle.
+    </p>
+    <p>
+        Toute reproduction, représentation, modification, publication, transmission ou dénaturation, totale ou partielle, du site ou de son contenu,
+        par quelque procédé que ce soit, et sur quelque support que ce soit, est interdite sans autorisation écrite préalable.
+    </p>
+
+    <h3>4. Données personnelles</h3>
+    <p>
+        Les données personnelles collectées sur ce site font l’objet d’un traitement conforme au Règlement Général sur la Protection des Données (RGPD).
+        Consultez notre <a href="{% url 'politique_confidentialite' %}">Politique de confidentialité</a> pour en savoir plus.
+    </p>
+
+    <h3>5. Cookies</h3>
+    <p>
+        Ce site utilise des cookies pour améliorer votre expérience de navigation et analyser le trafic.
+        Vous pouvez les accepter ou les refuser via notre bannière de consentement.
+    </p>
+
+    <h3>6. Responsabilité</h3>
+    <p>
+        IdealBooth ne saurait être tenu responsable en cas de dommage direct ou indirect résultant de l’accès ou de l’utilisation du site,
+        ou de tout dommage causé à l’équipement de l’utilisateur.
+    </p>
+</div>
+{% endblock %}

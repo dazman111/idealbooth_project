@@ -1,0 +1,99 @@
+{# admin_panel/partials/_reservation_table.html #}
+
+{% comment %}
+    Ce template est utilisé pour rendre le tableau des réservations.
+    Il est inclus dans 'admin_dashboard.html' et 'manage_reservations.html' pour l'affichage initial
+    et est re-rendu via AJAX après application des filtres ou mise à jour du statut.
+{% endcomment %}
+
+{% if reservations %}
+<div class="overflow-x-auto rounded-lg shadow-md">
+    <table class="min-w-full bg-white text-sm text-left text-gray-700">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+            <tr>
+                <th>#</th> <!-- Colonne numéro -->
+                <th scope="col" class="px-6 py-3">Utilisateur</th>
+                <th scope="col" class="px-6 py-3">Photobooth</th>
+                <th scope="col" class="px-6 py-3">Date</th>
+                <th scope="col" class="px-6 py-3">Statut</th>
+                <th scope="col" class="px-6 py-3 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr class="border-b hover:bg-gray-50 transition">
+                <td>{{ forloop.revcounter }}</td>  <!-- compte à rebours, 37, 36, ..., 1 -->
+                <td class="px-6 py-4 whitespace-nowrap font-medium">{{ reservation.user.username }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ reservation.photobooth.name }}</td>
+                {# Utilisation de reservation.start_date pour une date précise #}
+                <td class="px-6 py-4 whitespace-nowrap">{{ reservation.start_date|date:"d/m/Y H:i" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="py-1 px-3 rounded-full text-xs font-medium
+                        {% if reservation.status == 'pending' %}
+                            bg-yellow-200 text-yellow-800
+                        {% elif reservation.status == 'confirmed' %}
+                            bg-green-200 text-green-800
+                        {% elif reservation.status == 'cancelled' %}
+                            bg-red-200 text-red-800
+                        {% endif %}">
+                        {{ reservation.get_status_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center space-x-1">
+                    <!-- Détails -->
+                    <button class="action-btn inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:bg-blue-100 rounded-full transition" data-id="{{ reservation.id }}" data-action="details" title="Détails">
+                        🔍
+                    </button>
+                    
+                    <!-- Confirmer -->
+                    {% if reservation.status == 'pending' %}
+                        {# Le bouton Confirmer doit apparaître si la réservation est en attente #}
+                        <button class="action-btn inline-flex items-center justify-center w-8 h-8 text-green-600 hover:bg-green-100 rounded-full transition" data-id="{{ reservation.id }}" data-action="confirm" title="Confirmer">
+                            ✅
+                        </button>
+                    {% endif %}
+
+                    <!-- Facture (visible si confirmée) -->
+                    {% if reservation.status == 'confirmed' %}
+                    <a href="{% url 'admin_panel:generate_invoice' reservation.id %}" target="_blank" class="action-btn inline-flex items-center justify-center w-8 h-8 text-indigo-600 hover:bg-indigo-100 rounded-full transition" data-id="{{ reservation.id }}" data-action="invoice" title="Facture">
+                        📄
+                    </a>
+                    {% endif %}
+
+                    <!-- Marquer comme payé (visible si facture existe, n'est pas payée et réservation non annulée) -->
+                    {% comment %} 
+                        Assurez-vous que la vue 'manage_reservations' utilise 'select_related('invoice')'
+                        pour que 'reservation.invoice' soit disponible.
+                    {% endcomment %}
+                    {% if reservation.invoice and reservation.invoice.payment_status != 'paid' and reservation.status != 'cancelled' %}
+                    <button class="action-btn inline-flex items-center justify-center w-8 h-8 text-orange-600 hover:bg-orange-100 rounded-full transition" data-id="{{ reservation.id }}" data-action="mark_paid" title="Marquer comme payé">
+                        💰
+                    </button>
+                    {% endif %}
+
+                    <!-- Annuler (visible si non déjà annulée) -->
+                    {% if reservation.status != 'cancelled' %}
+                    <button class="action-btn inline-flex items-center justify-center w-8 h-8 text-red-600 hover:bg-red-100 rounded-full transition" data-id="{{ reservation.id }}" data-action="cancel" title="Annuler">
+                        ❌
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucune réservation trouvée.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+/* Styles Tailwind CSS pour les boutons sont déjà dans votre admin_dashboard.html */
+/* Assurez-vous que les classes `action-btn`, `inline-flex`, etc., sont bien définies par Tailwind */
+/* Si vous avez un fichier CSS personnalisé, vous pouvez ajouter ou ajuster ces styles ici. */
+</style>
+
+{% else %}
+    <div class="text-center text-gray-500">Aucune réservation trouvée.</div>
+{% endif %}

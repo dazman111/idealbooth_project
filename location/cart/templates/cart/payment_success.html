@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}Paiement réussi{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh] px-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center max-w-lg w-full">
+        <h2 class="text-3xl font-extrabold text-green-600 dark:text-green-400 mb-4">
+            ✅ {% trans "Paiement confirmé" %}
+        </h2>
+        <p class="text-gray-700 dark:text-gray-300 text-lg">
+            {% trans "Merci pour votre commande. Votre réservation est en cours de traitement." %}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {% trans "Vous serez redirigé vers votre tableau de bord dans quelques secondes..." %}
+        </p>
+        <div class="mt-6">
+            <a href="{% url 'user_dashboard' %}" class="text-blue-600 dark:text-blue-400 underline">
+                {% trans "Accéder immédiatement au tableau de bord" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        window.location.href = "{% url 'user_dashboard' %}";
+    }, 4000); // Redirection automatique après 4 secondes
+</script>
+{% endblock %}

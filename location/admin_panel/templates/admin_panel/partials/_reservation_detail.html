@@ -1,0 +1,10 @@
+<div class="modal-content">
+    <h2>Détails de la réservation</h2>
+    <p><strong>Utilisateur :</strong> {{ reservation.user.username }}</p>
+    <p><strong>Email :</strong> {{ reservation.user.email }}</p>
+    <p><strong>Photobooth :</strong> {{ reservation.photobooth.name }}</p>
+    <p><strong>Date :</strong> {{ reservation.date }}</p>
+    <p><strong>Statut :</strong> {{ reservation.get_status_display }}</p>
+    <button onclick="closeModal()">Fermer</button>
+  </div>
+  

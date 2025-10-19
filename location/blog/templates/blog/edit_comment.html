@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier le commentaire{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="mb-4">
+            <h2 class="fw-bold mb-3">💬 Modifier le commentaire</h2>
+            <p class="text-muted">Vous pouvez corriger ou compléter votre commentaire ici.</p>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 p-4 bg-white">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'article_detail' form.instance.article.id %}" class="btn btn-outline-secondary">
+                        ← Retour à l'article
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    form p {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+    }
+
+    @media (max-width: 576px) {
+        h2 {
+            font-size: 1.4rem;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}

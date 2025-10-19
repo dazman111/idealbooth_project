@@ -1,0 +1,16 @@
+<div class="container mt-5">
+    <h2>Confirmation de réservation</h2>
+    <form method="POST" action="{% url 'paiement' %}">
+        {% csrf_token %}
+        <ul>
+            {% for article in selected_articles %}
+                <li>
+                    {{ article.photobooth.name }} – {{ article.photobooth.price_per_day }} €
+                    <input type="hidden" name="selected_articles" value="{{ article.id }}">
+                </li>
+            {% endfor %}
+        </ul>
+        <p>Total : <strong>{{ total_amount }} €</strong></p>
+        <button type="submit" class="btn btn-success">Procéder au paiement</button>
+    </form>
+</div>

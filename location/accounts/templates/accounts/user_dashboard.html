@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Mon Tableau de Bord{% endblock %}
+
+{% block content %}
+<style>
+/* ===== STYLE DASHBOARD ALTERNATIF ===== */
+
+body {
+    font-family:'Open Sans', 'Roboto', sans-serif;
+    background-color: #fff; /* fond blanc pur */
+    color: #222; /* texte très sombre */
+    line-height: 1.5;
+}
+
+nav a {
+    font-weight: bold !important;
+}
+
+.dark body {
+    background-color: #121212; /* mode sombre très foncé */
+    color: #eee; /* texte clair */
+}
+
+/* Titres */
+h1, h2, h3, h4 {
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0;
+}
+.dark h1, .dark h2, .dark h3, .dark h4 {
+    color: #ddd;
+}
+
+/* Sections */
+section {
+    background-color: #fafafa; /* gris très clair */
+    border-radius: 12px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s ease;
+    border: none;
+}
+
+.dark section {
+    background-color: #1e1e1e;
+    box-shadow: 0 1px 8px rgba(255,255,255,0.1);
+}
+
+section:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.dark section:hover {
+    box-shadow: 0 6px 30px rgba(255,255,255,0.2);
+}
+
+/* Inputs et Textareas */
+input, textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: inherit;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #0066ff;
+    box-shadow: 0 0 8px rgba(0,102,255,0.3);
+}
+
+.dark input, .dark textarea {
+    background-color: #2a2a2a;
+    border-color: #555;
+    color: #eee;
+}
+
+.dark input:focus, .dark textarea:focus {
+    border-color: #3399ff;
+    box-shadow: 0 0 8px rgba(51,153,255,0.5);
+}
+
+::placeholder {
+    color: #999;
+}
+.dark ::placeholder {
+    color: #bbb;
+}
+
+/* Boutons */
+button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Couleurs des boutons */
+.bg-indigo-600 {
+    background-color: #0052cc;
+    color: white;
+}
+.bg-indigo-600:hover {
+    background-color: #003d99;
+    box-shadow: 0 0 10px rgba(0, 82, 204, 0.6);
+}
+
+.bg-green-600 {
+    background-color: #008a00;
+    color: white;
+}
+.bg-green-600:hover {
+    background-color: #005d00;
+    box-shadow: 0 0 10px rgba(0, 138, 0, 0.6);
+}
+
+.bg-blue-600 {
+    background-color: #0073e6;
+    color: white;
+}
+.bg-blue-600:hover {
+    background-color: #004d99;
+    box-shadow: 0 0 10px rgba(0, 115, 230, 0.6);
+}
+
+.bg-orange-500 {
+    background-color: #ff6600;
+    color: white;
+}
+.bg-orange-500:hover {
+    background-color: #cc5200;
+    box-shadow: 0 0 10px rgba(255, 102, 0, 0.6);
+}
+
+/* Liens */
+a {
+    color: #0052cc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+a:hover {
+    color: #003d99;
+    text-decoration: underline;
+}
+.dark a {
+    color: #3399ff;
+}
+.dark a:hover {
+    color: #66b2ff;
+}
+
+/* Statuts */
+.text-green-600 {
+    color: #008a00;
+}
+.text-orange-500 {
+    color: #ff6600;
+}
+.text-red-600 {
+    color: #cc0000;
+}
+.dark .text-green-600 {
+    color: #66ff66;
+}
+.dark .text-orange-500 {
+    color: #ff9933;
+}
+.dark .text-red-600 {
+    color: #ff6666;
+}
+
+/* Pagination simplifiée */
+nav.inline-flex a, nav.inline-flex span {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    margin: 0 0.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+nav.inline-flex a:hover {
+    background-color: #0052cc;
+    color: #fff;
+}
+.dark nav.inline-flex a, .dark nav.inline-flex span {
+    border-color: #555;
+    color: #eee;
+    background-color: #222;
+}
+.dark nav.inline-flex a:hover {
+    background-color: #3399ff;
+    color: #000;
+}
+nav.inline-flex .bg-gray-100 {
+    background-color: #eee;
+    font-weight: 700;
+}
+.dark nav.inline-flex .bg-gray-600 {
+    background-color: #444;
+    color: #eee;
+}
+
+/* Utility classes */
+.max-w-4xl {
+    max-width: 56rem;
+}
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+.space-y-12 > * + * {
+    margin-top: 3rem;
+}
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.p-4 { padding: 1rem; }
+.rounded-lg { border-radius: 0.75rem; }
+.shadow-lg {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.flex {
+    display: flex;
+}
+.justify-between {
+    justify-content: space-between;
+}
+.items-center {
+    align-items: center;
+}
+.font-medium {
+    font-weight: 500;
+}
+.font-semibold {
+    font-weight: 600;
+}
+.text-lg {
+    font-size: 1.125rem;
+}
+.text-sm {
+    font-size: 0.875rem;
+}
+.text-gray-600 {
+    color: #666;
+}
+.text-gray-500 {
+    color: #999;
+}
+.text-gray-400 {
+    color: #bbb;
+}
+.text-gray-800 {
+    color: #222;
+}
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-5 { margin-top: 1.25rem; }
+.space-y-1 > * + * {
+    margin-top: 0.25rem;
+}
+
+.online-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745; /* vert = en ligne */
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+</style>
+
+<div class="max-w-4xl mx-auto space-y-12">
+
+    <section>
+        <h1 class="text-3xl font-bold mb-2">{% trans "Bienvenue," %} {{ request.user.username }} !</h1>
+        <p class="text-gray-600 dark:text-gray-400">{% trans "Gérez vos commandes, votre profil et contactez l'équipe." %}</p>
+    </section>
+
+    <section>
+        <h2 class="text-2xl font-semibold mb-4">{% trans "Mes Commandes et Paiements" %}</h2>
+        {% if page_obj %}
+            <div class="space-y-6">
+                {% for invoice in page_obj %}
+                    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 transition">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-medium">{% trans "Facture #" %}{{ invoice.id }}</h3>
+                             {% if invoice.payment_status == 'pending' and invoice.has_cancelled %}
+                                <span class="font-semibold text-red-600">{% trans "Réservation annulée" %}</span>
+                            {% else %}
+                                <span class="font-semibold 
+                                    {% if invoice.payment_status == 'paid' %}text-green-600
+                                    {% elif invoice.payment_status == 'pending' %}text-orange-500
+                                    {% else %}text-red-600{% endif %}">
+                                    {{ invoice.get_payment_status_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <p>{% trans "Montant :" %} <strong>{{ invoice.total_amount }} €"</strong></p>
+                        {% if invoice.coupon_used %}
+                            <p>{% trans "Coupon :" %} <strong>{{ invoice.coupon_used.code }}</strong> ({{ invoice.discount_amount }} {% trans "€ de réduction)" %}</p>
+                        {% endif %}
+                        <p class="text-sm text-gray-500">{% trans "Date :" %} {{ invoice.created_at|date:"d M Y H:i" }}</p>
+
+                        <div class="mt-2">
+                            <h4 class="font-semibold">{% trans "Réservations" %}</h4>
+                            {% if invoice.reservations_linked.all %}
+                                <ul class="mt-1 space-y-1">
+                                    {% for reservation in invoice.reservations_linked.all %}
+                                        <li class="border rounded p-2 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                                            <div>
+                                                <div>{{ reservation.photobooth.name }}</div>
+                                                <div class="text-sm">{% trans "Du" %} {{ reservation.start_date|date:"d/m/Y H:i" }} {% trans "au" %} {{ reservation.end_date|date:"d/m/Y H:i" }}</div>
+                                                <div class="text-sm">
+                                                    {% trans "Statut :" %}
+                                                    <span class="font-semibold 
+                                                        {% if reservation.status == 'confirmed' %}text-green-600
+                                                        {% elif reservation.status == 'pending' %}text-orange-500
+                                                        {% else %}text-red-600{% endif %}">
+                                                        {{ reservation.get_status_display }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {# Ajout du bouton de téléchargement pour chaque réservation #}
+                                            {% if reservation.status == 'confirmed' %}
+                                            <a href="{% url 'generate_invoice' reservation.id %}" 
+                                               class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition"
+                                               target="_blank" rel="noopener noreferrer">
+                                                {% trans "Télécharger la facture" %}
+                                            </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-sm text-gray-500">{% trans "Aucune réservation liée." %}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow-sm">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded-l bg-white dark:bg-gray-700">{% trans "Précédent" %}</a>
+                    {% endif %}
+                    <span class="px-3 py-1 border-t border-b bg-gray-100 dark:bg-gray-600">{{ page_obj.number }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded-r bg-white dark:bg-gray-700">{% trans "Suivant" %}</a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% else %}
+            <p class="text-gray-500">{% trans "Aucune commande trouvée." %}</p>
+        {% endif %}
+    </section>
+
+    <section id="profile">
+        <h2 class="text-2xl font-semibold mb-4">{% trans "Modifier mon profil" %}</h2>
+        <form action="{% url 'edit_profile' %}" method="post" class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 space-y-4 transition">
+           {% csrf_token %}
+
+            <div>
+                <label for="username" class="block text-sm font-medium">{% trans "Nom d'utilisateur" %}</label>
+                <input type="text" id="username" name="username" value="{{ request.user.username }}" required class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium">{% trans "Email" %}</label>
+                <input type="email" id="email" name="email" value="{{ request.user.email }}" required class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="first_name" class="block text-sm font-medium">{% trans "Prénom" %}</label>
+                <input type="text" id="first_name" name="first_name" value="{{ request.user.first_name }}" class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="last_name" class="block text-sm font-medium">{% trans "Nom" %}</label>
+                <input type="text" id="last_name" name="last_name" value="{{ request.user.last_name }}" class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="phone" class="block text-sm font-medium">{% trans "Téléphone" %}</label>
+                <input type="text" id="phone_number" name="phone_number" value="{{ request.user.phone_number }}" ... >
+
+            </div>
+
+            <div>
+                <label for="address" class="block text-sm font-medium">{% trans "Adresse" %}</label>
+                <input type="text" id="address" name="address" value="{{ request.user.profile.address }}" class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div class="flex items-center justify-between mt-4">
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">
+                {% trans "Mettre à jour" %}
+            </button>
+            <a href="{% url 'change_password' %}" class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded">
+                {% trans "Changer le mot de passe" %}
+            </a>
+        </div>
+        </form>
+        <div class="mt-6 border-t pt-4 text-right">
+            {% if user.profile.deletion_date %}
+                <p class="text-sm text-gray-600 mb-2">
+                    Votre compte est programmé pour suppression le 
+                    <strong>{{ user.profile.deletion_date|date:"d/m/Y H:i" }}</strong>.
+                </p>
+                <a href="{% url 'cancel_account_deletion' %}" 
+                class="text-yellow-600 hover:underline text-sm">
+                    Annuler la suppression du compte
+                </a>
+            {% else %}
+                <a href="{% url 'request_account_deletion' %}" 
+                class="text-red-600 hover:underline text-sm"
+                onclick="return confirm('Voulez-vous vraiment programmer la suppression de votre compte ?');">
+                    Supprimer mon compte (dans 30 jours)
+                </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2 class="text-2xl font-semibold mb-4">{% trans "Envoyer un message à l'admin" %}</h2>
+        <form action="{% url 'contact_admin' %}" method="post" class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 space-y-4 transition">
+            {% csrf_token %}
+            <div>
+                <label for="subject" class="block text-sm font-medium">{% trans "Sujet" %}</label>
+                <input type="text" id="subject" name="subject" required class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+            </div>
+            <div>
+                <label for="message" class="block text-sm font-medium">{% trans "Message" %}</label>
+                <textarea id="message" name="message" rows="5" required class="mt-1 w-full rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"></textarea>
+            </div>
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                {% trans "Envoyer" %}
+            </button>
+        </form>
+    </section>
+
+</div>
+{% endblock %}

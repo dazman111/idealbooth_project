@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <h2 class="text-2xl font-bold mb-6">❤️ Mes photobooths favoris</h2>
+
+    {% if favorites %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for fav in favorites %}
+                <div class="bg-white dark:bg-gray-800 shadow rounded-2xl p-4 flex items-center space-x-4">
+                    <img src="{{ fav.photobooth.image.url }}" 
+                         alt="{{ fav.photobooth.name }}" 
+                         class="h-20 w-20 rounded-lg object-cover">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+                            {{ fav.photobooth.name }}
+                        </h3>
+                        <a href="{% url 'toggle_favorite' fav.photobooth.id %}" 
+                           class="text-sm text-red-500 hover:text-red-700">
+                           Retirer des favoris
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-600 dark:text-gray-300">Vous n’avez pas encore de favoris.</p>
+    {% endif %}
+</div>
+{% endblock %}

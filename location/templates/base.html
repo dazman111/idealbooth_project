@@ -1,0 +1,501 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% trans "IdealBooth" %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap & Icons -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"rel="stylesheet"crossorigin="anonymous"referrerpolicy="no-referrer" />
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"rel="stylesheet"crossorigin="anonymous"referrerpolicy="no-referrer" />
+   <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"crossorigin="anonymous"referrerpolicy="no-referrer" />
+   <link rel="icon"href="{% static 'images/favicon.ico' %}"type="image/x-icon" />
+   <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+   <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+   <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon">
+   <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
+   <link rel="manifest" href="/static/images/site.webmanifest">
+
+   <style>
+    :root {
+        --primary-color: #5B6E9D; /* bleu principal */
+        --secondary-color: #B08824; /* doré */
+        --text-dark: #000000; /* noir */
+        --bg-light: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Poppins', 'Inter', sans-serif;
+        background-color: var(--bg-light);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        scroll-behavior: smooth;
+    }
+
+    /* === Navbar === */
+    .navbar {
+    background-color: rgba(91, 110, 157, 0.65); /* bleu principal avec opacité 85% */
+    border-bottom: 2px solid var(--secondary-color);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    backdrop-filter: blur(8px); /* léger flou derrière la navbar pour améliorer la lisibilité */
+}
+
+    .navbar-brand img {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        filter: brightness(1.2) contrast(1.3) drop-shadow(0 0 6px rgba(0,0,0,0.5));
+        transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    .navbar-brand img:hover {
+        transform: scale(1.1);
+        filter: brightness(1.4) contrast(1.6) drop-shadow(0 0 12px rgba(0,0,0,0.7));
+    }
+
+    .navbar-brand span {
+        color: var(--secondary-color);
+        font-weight: 700;
+        font-size: 1.7rem;
+    }
+
+    .nav-link {
+        font-weight: 600;
+        color: #ffffff !important;
+        transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: var(--secondary-color) !important;
+    }
+
+    .cart-icon {
+        position: relative;
+        margin-left: 10px;
+    }
+
+    .cart-icon i {
+        font-size: 22px;
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -4px;
+        right: -10px;
+        background: var(--secondary-color);
+        color: #fff;
+        border-radius: 50%;
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+
+    /* === Footer (inchangé) === */
+    footer {
+        background-color: #212529;
+        color: #f8f9fa;
+        padding: 40px 0;
+        font-size: 14px;
+    }
+
+    footer a {
+        color: #adb5bd;
+        margin: 0 8px;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        color: white;
+    }
+
+    .social-icons a {
+        color: #adb5bd; /* gris clair */
+        margin: 0 10px;
+        font-size: 20px;
+        transition: color 0.3s ease, transform 0.3s ease;
+        display: inline-block;
+    }
+
+    .social-icons a:hover {
+        color: var(--secondary-color);
+        transform: scale(1.2);
+    }
+
+    /* === Alerts / Promo Banner === */
+    .alert {
+        position: relative;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff !important;
+        background: linear-gradient(90deg, #5B6E9D, #B08824); /* bleu -> doré */
+        border: none;
+        border-radius: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        user-select: none;
+        z-index: 1050 !important;
+    }
+
+    .alert > *:first-child {
+        flex-grow: 1;
+    }
+
+    .alert button.btn-dark {
+        background: #fff;
+        color: #B08824;
+        font-weight: 700;
+        border-radius: 30px;
+        padding: 0.3rem 0.9rem;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border: none;
+        user-select: text;
+    }
+
+    .alert button.btn-dark:hover {
+        background: var(--secondary-color);
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    .alert .close {
+        position: relative;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 900;
+        line-height: 1;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        padding: 0 8px 0 12px;
+        user-select: none;
+    }
+
+    .alert .close:hover {
+        opacity: 1;
+    }
+
+    @media (max-width: 576px) {
+        .alert {
+            font-size: 1rem;
+            padding: 0.8rem 1rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .alert button.btn-dark {
+            padding: 0.25rem 0.7rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+</head>
+<body>
+    
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+    <div class="container">
+        <a id="logo-link" class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <img src="{% static 'images/logo11.png' %}" alt="logo" class="me-2">
+            <span>IdealBooth</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">{% trans "Accueil" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'photobooth_list' %}">{% trans "Photobooths" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'blog_home' %}">{% trans "Blog" %}</a></li>
+                <li class="nav-item cart-icon">
+                    <a href="{% url 'cart_detail' %}" class="relative">
+                    <i class="fas fa-shopping-cart" style="color: black;"></i>
+                    <span id="cart-badge">{{ cart.items.count }}</span>
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <li class="nav-item"><a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-outline-danger ms-2">Admin</a></li>
+                    {% else %}
+                        <li class="nav-item d-flex align-items-center">
+                            <!-- Icône profil utilisateur -->
+                            <a class="nav-link d-flex align-items-center" href="{% url 'user_dashboard' %}" title="Mon espace">
+                                <i class="bi bi-person-circle me-1" style="font-size: 1.2rem; color:#28a745;"></i>
+                                {% trans "Mon espace" %}
+                            </a>
+                        </li>
+                        <li class="nav-item position-relative">
+                          <a href="{% url 'user_favorites' %}" class="nav-link d-flex align-items-center" style="position: relative;">
+                              ❤️
+                              {% if user.favorites.count > 0 %}
+                                  <span style="
+                                      position: absolute;
+                                      top: -0.3rem;
+                                      right: -0.5rem;
+                                      background-color: red;
+                                      color: white;
+                                      font-size: 0.65rem;
+                                      width: 1rem;
+                                      height: 1rem;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      border-radius: 50%;
+                                  ">
+                                      {{ user.favorites.count }}
+                                  </span>
+                              {% endif %}
+                          </a>
+                      </li>
+
+                    <li class="nav-item">
+                        <a href="{% url 'user_messages' %}" class="nav-link px-4 py-2" style="position: relative; display: inline-flex; align-items: center;">
+                            {% trans "Messages" %}
+                            {% if unread_messages_count > 0 %}
+                                <span style="
+                                    display: inline-flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    background-color: red;
+                                    color: white;
+                                    border-radius: 50%;
+                                    font-size: 0.7rem;
+                                    width: 1rem;
+                                    height: 1rem;
+                                    margin-left: 0.25rem;
+                                ">
+                                    {{ unread_messages_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    {% endif %}
+                   <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">{% trans "Déconnexion" %}</a></li>
+                  {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">{% trans "Connexion" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">{% trans "Inscription" %}</a></li>
+                {% endif %}
+                <li class="nav-item ms-3">
+                    <form action="/i18n/setlang/" method="post" class="d-flex align-items-center">
+                        {% csrf_token %}
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        <select name="language" onchange="this.form.submit()" class="form-select form-select-sm">
+                            {% for lang_code, lang_name in LANGUAGES %}
+                                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                                    {% if lang_code == "fr" %}🇧🇪 {% elif lang_code == "nl" %}🇧🇪 {% elif lang_code == "en" %}🇬🇧 {% endif %}
+                                    {{ lang_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Messages -->
+<div class="container mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% if promo_banners and not request.user.is_staff %}
+  {% for banner in promo_banners %}
+    <div id="promo-banner-{{ forloop.counter }}" class="alert alert-warning text-center sticky-top mb-0" style="z-index: 9999;">
+      {{ banner.message }}
+      {% if banner.promo_code %}
+        <button class="btn btn-sm btn-dark ms-2" onclick="copyPromoCode('{{ banner.promo_code }}')">
+          Copier le code : {{ banner.promo_code }}
+        </button>
+      {% endif %}
+      <button type="button" class="close ms-3" onclick="hidePromoBanner('promo-banner-{{ forloop.counter }}')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+  <script>
+    function copyPromoCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        const toast = document.createElement('div');
+        toast.textContent = `Code copié : ${code}`;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.background = '#e52e71';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 15px';
+        toast.style.borderRadius = '25px';
+        toast.style.boxShadow = '0 4px 12px rgba(229, 46, 113, 0.6)';
+        toast.style.zIndex = 11000;
+        toast.style.fontWeight = '600';
+        toast.style.userSelect = 'none';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.transition = 'opacity 0.5s ease';
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 500);
+        }, 2000);
+      });
+    }
+
+    function hidePromoBanner(id) {
+      const banner = document.getElementById(id);
+      if (banner) {
+        banner.style.transition = 'opacity 0.5s ease';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.style.display = 'none', 500);
+        sessionStorage.setItem(id + '_closed', '1');
+      }
+    }
+  </script>
+{% endif %}
+
+
+<!-- Contenu principal -->
+<main class="container my-4">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="text-center mt-auto">
+    <div class="container">
+        <p class="mb-2">&copy; {% trans "2025 IdealBooth. Tous droits réservés." %}</p>
+        <p>
+            <a href="{% url 'mentions_legales' %}" class="text-light">{% trans "Mentions légales" %}</a> | 
+            <a href="{% url 'politique_confidentialite' %}" class="text-light">{% trans "Politique de confidentialité" %}</a>
+
+        </p>
+        <!-- Réseaux sociaux -->
+        <div class="social-icons mt-3">
+            <a href="https://www.facebook.com/tonprofil" target="_blank" rel="noopener" aria-label="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://www.instagram.com/tonprofil" target="_blank" rel="noopener" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://twitter.com/tonprofil" target="_blank" rel="noopener" aria-label="Twitter">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </div>
+    </div>
+</footer>
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ Script pour gérer le CSRF token -->
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie("csrftoken");
+</script>
+
+<!-- Script Stripe avec CSRF sécurisé -->
+{% block scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+
+    document.getElementById("checkout-button")?.addEventListener("click", function () {
+        fetch("{% url 'create_checkout_session' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include"
+        })
+        .then(response => response.json())
+        .then(session => {
+            if (session.error) {
+                alert(session.error);
+            } else {
+                stripe.redirectToCheckout({ sessionId: session.id });
+            }
+        })
+        .catch(error => console.error("Erreur :", error));
+    });
+</script>
+<script>
+function addToCartAjax(photoboothId) {
+    const formData = new FormData();
+    formData.append("quantite", 1);  // tu peux adapter
+    formData.append("start_date", document.getElementById("start_date").value);
+    formData.append("end_date", document.getElementById("end_date").value);
+
+    fetch(`/cart/add/${photoboothId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour le badge du panier
+            document.getElementById("cart-count").textContent = data.cart_count;
+        }
+        alert(data.message);
+    })
+    .catch(error => console.error("Erreur:", error));
+}
+
+// Helper pour CSRF Django
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}
+
+</body>
+</html>

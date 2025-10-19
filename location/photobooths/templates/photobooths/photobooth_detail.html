@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ photobooth.name }}{% endblock %}
+
+{% block content %}
+<div class="card mx-auto mt-5 shadow-lg rounded-4" style="max-width: 700px;">
+    <img src="{{ photobooth.image.url }}" class="card-img-top rounded-top-4" alt="{{ photobooth.name }}">
+    <div class="card-body">
+        <h3 class="card-title">{{ photobooth.name }}</h3>
+        <p class="card-text">{{ photobooth.description }}</p>
+        <p class="card-text"><strong>{{ photobooth.price_per_day }} € / jour</strong></p>
+        <p>Stock disponible : {{ photobooth.available }}</p>
+
+        {% if user.is_authenticated %}
+            {% if photobooth.available > 0 %}
+                <form method="post" action="{% url 'add_to_cart' photobooth.id %}" class="add-to-cart-form flex items-center gap-3">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="start_date">📅 Date de début :</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    </div>
+
+                    <div>
+                        <label for="end_date">📅 Date de fin :</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" required>
+                    </div>
+
+                    <div>
+                        <label for="quantity">Quantité :</label>
+                        <input type="number" id="quantity" name="quantite" value="1" min="1" max="{{ photobooth.available }}" required class="border rounded px-2 py-1">
+                        <small id="quantity-warning" class="text-red-500 hidden">
+                            Quantité maximale atteinte ({{ photobooth.available }}).
+                        </small>
+                    </div>
+
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                        Ajouter au panier
+                    </button>
+                    <span id="cart-badge">{{ cart_count }}</span>
+                </form>
+            {% else %}
+                <p class="text-red-500">Ce photobooth est indisponible.</p>
+            {% endif %}
+
+            <!-- Favoris -->
+            {% if is_favorite %}
+                <a href="{% url 'remove_favorite' photobooth.pk %}" class="p-2 rounded-full border-2 border-green-500 bg-green-100 hover:bg-green-200 transition">
+                    ❤️
+                </a>
+            {% else %}
+                <a href="{% url 'add_favorite' photobooth.pk %}" class="p-2 rounded-full border-2 border-gray-400 hover:border-green-500 hover:bg-green-100 transition">
+                    🤍
+                </a>
+            {% endif %}
+
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-warning btn-lg w-100 rounded-pill mt-3">
+                Connectez-vous pour réserver
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+{% endblock %}
+
+
+<script>
+flatpickr("#start_date", {
+    locale: "fr",
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    minDate: "today"
+});
+flatpickr("#end_date", {
+    locale: "fr",
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    minDate: "today"
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('add-to-cart-form');
+    const feedbackDiv = document.getElementById('feedback-message');
+    const cartItemCountSpan = document.getElementById('cart-item-count'); // L'élément pour afficher le décompte
+
+    // Fonction pour mettre à jour le compteur du panier
+    function updateCartCounter(count) {
+        if (cartItemCountSpan) {
+            cartItemCountSpan.textContent = count;
+        }
+    }
+
+    // Fonction pour afficher les messages de feedback
+    function displayFeedback(message, isSuccess) {
+        feedbackDiv.innerHTML = `<p class="font-semibold">${message}</p>`;
+        feedbackDiv.className = 'mt-4 text-center max-w-md mx-auto p-3 rounded'; // Réinitialise les classes
+        if (isSuccess) {
+            feedbackDiv.classList.add('bg-green-100', 'text-green-600');
+        } else {
+            feedbackDiv.classList.add('bg-red-100', 'text-red-600');
+        }
+    }
+
+    // --- Gestion de la soumission du formulaire d'ajout au panier ---
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Empêche l'envoi traditionnel du formulaire et le rechargement de la page
+
+            displayFeedback("Ajout au panier...", false); // Message temporaire de chargement
+            feedbackDiv.classList.add('bg-blue-100', 'text-blue-600'); // Style pour le chargement
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                // Vérifier si la réponse est un succès HTTP (statut 2xx)
+                if (!response.ok) {
+                    // Si le statut n'est pas OK, tentez de lire le JSON pour un message d'erreur spécifique
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || `Erreur serveur: ${response.status} ${response.statusText}`);
+                    }).catch(() => {
+                        // Si le corps n'est pas un JSON valide ou autre erreur
+                        throw new Error(`Erreur réseau: ${response.status} ${response.statusText}`);
+                    });
+                }
+                // Si la réponse est OK, parsez-la comme JSON
+                return response.json();
+            })
+            .then(data => {
+                // Traitez la réponse JSON du serveur
+                displayFeedback(data.message, data.success);
+
+                if (data.success && data.cart_item_count !== undefined) {
+                    updateCartCounter(data.cart_item_count);
+                }
+            })
+            .catch(error => {
+                // Gérez les erreurs réseau ou les erreurs lancées par le .then() précédent
+                console.error('Erreur lors de l\'ajout au panier:', error);
+                displayFeedback(`Une erreur inattendue s'est produite: ${error.message}. Veuillez réessayer.`, false);
+            });
+        });
+    } else {
+        console.warn("Le formulaire avec l'ID 'add-to-cart-form' n'a pas été trouvé.");
+    }
+
+    // --- Initialisation du compteur de panier au chargement de la page ---
+    // Cette partie utilise la nouvelle vue Django 'get_cart_item_count'
+    if (cartItemCountSpan) {
+        fetch('/api/cart/count/') // Assurez-vous que cette URL correspond à votre urls.py
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.count !== undefined) {
+                    updateCartCounter(data.count);
+                } else {
+                    console.error('Impossible de récupérer le nombre d\'articles du panier:', data.message);
+                }
+            })
+            .catch(error => console.error('Erreur réseau lors de l\'initialisation du compteur de panier:', error));
+    }
+});

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">👥 Gestion des utilisateurs</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">⬅ Retour au Dashboard</a>
+
+    <div class="table-responsive bg-white p-3 rounded shadow-sm">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Date d'inscription</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if user.is_active %}
+                            ✅ Actif
+                        {% else %}
+                            ❌ Inactif
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_user_detail' user.id %}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-warning">Modifier</a>
+
+                    <form method="POST" action="{% url 'admin_delete_user' user.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <button type="submit" class="btn btn-sm btn-danger">Désactiver</button>
+                        {% else %}
+                    </form>  <!-- Fermeture du form précédent -->
+
+                    <form method="POST" action="{% url 'admin_reactivate_user' user.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success">Réactiver</button>
+                    </form>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-user-btn");
+
+    deleteButtons.forEach(button => {
+        button.addEventListener("click", function (e) {
+            e.preventDefault(); // empêche le GET
+
+            const userId = this.dataset.userId;
+            const url = `/admin-panel/users/${userId}/delete/`; // URL exacte de ton urls.py
+
+            if (confirm("Confirmer la suppression de ce compte utilisateur ?")) {
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload(); // recharge la page après suppression
+                    } else {
+                        alert(data.error || "Une erreur est survenue.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur réseau :", error);
+                    alert("Erreur réseau. Veuillez réessayer.");
+                });
+            }
+        });
+    });
+});
+</script>

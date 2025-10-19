@@ -1,0 +1,596 @@
+# Dutch translations for IdealBooth
+msgid ""
+msgstr ""
+"Project-Id-Version: IdealBooth 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-06 10:05+0200\n"
+"PO-Revision-Date: 2025-08-06 14:00+0200\n"
+"Last-Translator: AI Translator <ai@idealbooth.com>\n"
+"Language-Team: Dutch\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: photobooth_project/settings.py:231
+msgid "Français"
+msgstr "Frans"
+
+#: photobooth_project/settings.py:232
+msgid "English"
+msgstr "Engels"
+
+#: photobooth_project/settings.py:233
+msgid "Nederlands"
+msgstr "Nederlands"
+
+#: templates/base.html:7
+msgid "IdealBooth"
+msgstr "IdealBooth"
+
+#: templates/base.html:230
+msgid "Accueil"
+msgstr "Home"
+
+#: templates/base.html:231
+msgid "Photobooths"
+msgstr "Fotohokjes"
+
+#: templates/base.html:232
+msgid "Blog"
+msgstr "Blog"
+
+#: templates/base.html:246
+msgid "Mon espace"
+msgstr "Mijn account"
+
+#: templates/base.html:249
+msgid "Messages"
+msgstr "Berichten"
+
+#: templates/base.html:252
+msgid "Déconnexion"
+msgstr "Uitloggen"
+
+#: templates/base.html:254
+msgid "Connexion"
+msgstr "Inloggen"
+
+#: templates/base.html:255
+msgid "Inscription"
+msgstr "Registreren"
+
+#: templates/base.html:348
+msgid "2025 IdealBooth. Tous droits réservés."
+msgstr "2025 IdealBooth. Alle rechten voorbehouden."
+
+#: templates/base.html:350
+msgid "Mentions légales"
+msgstr "Wettelijke vermeldingen"
+
+#: templates/base.html:351
+msgid "Politique de confidentialité"
+msgstr "Privacybeleid"
+
+# HOME PAGE
+#: templates/home.html
+msgid "Accueil - IdealBooth"
+msgstr "Home - IdealBooth"
+
+#: templates/home.html
+msgid "Bienvenue sur"
+msgstr "Welkom bij"
+
+#: templates/home.html
+msgid "Louez facilement nos photobooths modernes pour vos"
+msgstr "Huur eenvoudig onze moderne fotohokjes voor uw"
+
+#: templates/home.html
+msgid "mariages"
+msgstr "bruiloften"
+
+#: templates/home.html
+msgid "fêtes"
+msgstr "feesten"
+
+#: templates/home.html
+msgid "séminaires"
+msgstr "seminaries"
+
+#: templates/home.html
+msgid "et plus encore."
+msgstr "en nog veel meer."
+
+#: templates/home.html
+msgid "Voir nos Photobooths"
+msgstr "Bekijk onze fotohokjes"
+
+#: templates/home.html
+msgid "Lire le Blog"
+msgstr "Lees de blog"
+
+#: templates/home.html
+msgid "Photobooth 1"
+msgstr "Fotohokje 1"
+
+#: templates/home.html
+msgid "Photobooth 2"
+msgstr "Fotohokje 2"
+
+#: templates/home.html
+msgid "Photobooth 3"
+msgstr "Fotohokje 3"
+
+#: templates/photobooths.html
+msgid "Découvrez nos Photobooths et accessoires"
+msgstr "Ontdek onze photobooths en accessoires"
+
+#: templates/photobooths.html
+msgid "Recherche"
+msgstr "Zoeken"
+
+#: templates/photobooths.html
+msgid "Prix max (€)"
+msgstr "Maximale prijs (€)"
+
+#: templates/photobooths.html
+msgid "Disponibles uniquement"
+msgstr "Alleen beschikbare"
+
+#: templates/photobooths.html
+msgid "Filtrer"
+msgstr "Filteren"
+
+#: templates/photobooths.html
+msgid "Disponible"
+msgstr "Beschikbaar"
+
+#: templates/photobooths.html
+msgid "Indisponible"
+msgstr "Niet beschikbaar"
+
+#: templates/photobooths.html
+msgid "Début"
+msgstr "Begin"
+
+#: templates/photobooths.html
+msgid "Fin"
+msgstr "Einde"
+
+#: templates/photobooths.html
+msgid "Quantité"
+msgstr "Hoeveelheid"
+
+#: templates/photobooths.html
+msgid "Ajouter au panier"
+msgstr "Toevoegen aan winkelwagen"
+
+#: templates/photobooths.html
+msgid "Ce photobooth est indisponible"
+msgstr "Deze photobooth is niet beschikbaar"
+
+#: templates/photobooths.html
+msgid "Prévenez-moi"
+msgstr "Breng me op de hoogte"
+
+#: templates/photobooths.html
+msgid "Voir les détails"
+msgstr "Bekijk details"
+
+#: templates/photobooths.html
+msgid "Aucun photobooth ne correspond à vos critères."
+msgstr "Geen photobooth komt overeen met uw criteria."
+
+#: templates/photobooths.html
+msgid "← Précédent"
+msgstr "← Vorige"
+
+#: templates/photobooths.html
+msgid "Suivant →"
+msgstr "Volgende →"
+
+#: templates/blog.html
+msgid "Bienvenue sur notre Blog"
+msgstr "Welkom op onze blog"
+
+#: templates/blog.html
+msgid "Découvrez les dernières actualités, conseils et inspirations de notre équipe."
+msgstr "Ontdek het laatste nieuws, tips en inspiratie van ons team."
+
+#: templates/blog.html
+msgid "Lire la suite"
+msgstr "Lees verder"
+
+#: templates/blog.html
+msgid "Aucun article publié pour le moment. Revenez bientôt !"
+msgstr "Nog geen artikelen gepubliceerd. Kom binnenkort terug!"
+
+#: templates/blog.html
+msgid "Commentaires"
+msgstr "Reacties"
+
+#: templates/blog.html
+msgid "Modifier"
+msgstr "Bewerken"
+
+#: templates/blog.html
+msgid "Auteur"
+msgstr "Auteur"
+
+#: templates/blog.html
+msgid "Aucun commentaire pour le moment."
+msgstr "Nog geen reacties."
+
+#: templates/blog.html
+msgid "Laisser un commentaire"
+msgstr "Laat een reactie achter"
+
+#: templates/blog.html
+msgid "Note (1 à 5 étoiles)"
+msgstr "Beoordeling (1 tot 5 sterren)"
+
+#: templates/blog.html
+msgid "Commentaire"
+msgstr "Reactie"
+
+#: templates/blog.html
+msgid "Commenter"
+msgstr "Reageren"
+
+#: templates/blog.html
+msgid "Vous devez"
+msgstr "U moet"
+
+#: templates/blog.html
+msgid "vous connecter"
+msgstr "inloggen"
+
+#: templates/blog.html
+msgid "pour laisser un commentaire."
+msgstr "om een reactie achter te laten."
+
+#: templates/blog.html
+msgid "❤️ Je n'aime plus"
+msgstr "❤️ Ik vind het niet meer leuk"
+
+#: templates/blog.html
+msgid "🤍 J’aime"
+msgstr "🤍 Ik vind het leuk"
+
+#: templates/blog.html
+msgid "Connectez-vous"
+msgstr "Log in"
+
+#: templates/blog.html
+msgid "pour liker cet article."
+msgstr "om dit artikel leuk te vinden."
+
+#: templates/accounts.html
+msgid "Changer le mot de passe"
+msgstr "Wachtwoord wijzigen"
+
+#: templates/accounts.html
+msgid "Nouveau mot de passe"
+msgstr "Nieuw wachtwoord"
+
+#: templates/accounts.html
+msgid "Confirmez le mot de passe"
+msgstr "Bevestig wachtwoord"
+
+#: templates/accounts.html
+msgid "Mettre à jour le mot de passe"
+msgstr "Wachtwoord bijwerken"
+
+#: templates/accounts.html
+msgid "Contacter l'administrateur"
+msgstr "Neem contact op met de beheerder"
+
+#: templates/accounts.html
+msgid "Envoyez-nous un message et nous vous répondrons rapidement."
+msgstr "Stuur ons een bericht en we nemen snel contact met u op."
+
+#: templates/accounts.html
+msgid "Supprimer mon compte"
+msgstr "Mijn account verwijderen"
+
+#: templates/accounts.html
+msgid "⚠️ Cette action est irréversible. Toutes vos données seront supprimées."
+msgstr "⚠️ Deze actie is onomkeerbaar. Al uw gegevens worden verwijderd."
+
+#: templates/accounts.html
+msgid "Supprimer mon compte définitivement"
+msgstr "Mijn account definitief verwijderen"
+
+#: templates/accounts.html
+msgid "Annuler"
+msgstr "Annuleren"
+
+#: templates/accounts.html
+msgid "Enregistrer les modifications"
+msgstr "Wijzigingen opslaan"
+
+#: templates/accounts.html
+msgid "← Retour au profil"
+msgstr "← Terug naar profiel"
+
+msgid "Nom d'utilisateur"
+msgstr "Gebruikersnaam"
+
+msgid "Mot de passe"
+msgstr "Wachtwoord"
+
+msgid "Pas encore inscrit ?"
+msgstr "Nog geen account?"
+
+msgid "Créer un compte"
+msgstr "Account aanmaken"
+
+msgid "Mot de passe oublié ?"
+msgstr "Wachtwoord vergeten?"
+
+msgid "Mot de passe modifié avec succès !"
+msgstr "Wachtwoord succesvol gewijzigd!"
+
+msgid "Retour au tableau de bord"
+msgstr "Terug naar dashboard"
+
+msgid "Changer mon mot de passe"
+msgstr "Mijn wachtwoord wijzigen"
+
+msgid "Enregistrer"
+msgstr "Opslaan"
+
+msgid "Mon Profil"
+msgstr "Mijn profiel"
+
+msgid "Nom d'utilisateur :"
+msgstr "Gebruikersnaam:"
+
+msgid "Nom :"
+msgstr "Achternaam:"
+
+msgid "Prénom :"
+msgstr "Voornaam:"
+
+msgid "Email :"
+msgstr "E-mailadres:"
+
+msgid "Téléphone :"
+msgstr "Telefoonnummer:"
+
+msgid "Modifier les informations"
+msgstr "Gegevens bewerken"
+
+msgid "S'inscrire"
+msgstr "Registreren"
+
+msgid "Déjà un compte ?"
+msgstr "Al een account?"
+
+msgid "Se connecter"
+msgstr "Inloggen"
+
+msgid "Bienvenue,"
+msgstr "Welkom,"
+
+msgid "Gérez vos commandes, votre profil et contactez l'équipe."
+msgstr "Beheer uw bestellingen, profiel en neem contact op met het team."
+
+msgid "Mes Commandes et Paiements"
+msgstr "Mijn bestellingen en betalingen"
+
+msgid "Facture #"
+msgstr "Factuur #"
+
+msgid "Réservation annulée"
+msgstr "Reservering geannuleerd"
+
+msgid "Montant :"
+msgstr "Bedrag:"
+
+msgid "Coupon :"
+msgstr "Kortingscode:"
+
+msgid "€ de réduction"
+msgstr "€ korting"
+
+msgid "Date :"
+msgstr "Datum:"
+
+msgid "Réservations"
+msgstr "Reserveringen"
+
+msgid "Du"
+msgstr "Van"
+
+msgid "au"
+msgstr "tot"
+
+msgid "Statut :"
+msgstr "Status:"
+
+msgid "Télécharger la facture"
+msgstr "Factuur downloaden"
+
+msgid "Aucune réservation liée."
+msgstr "Geen gekoppelde reserveringen."
+
+msgid "Précédent"
+msgstr "Vorige"
+
+msgid "Suivant"
+msgstr "Volgende"
+
+msgid "Aucune commande trouvée."
+msgstr "Geen bestelling gevonden."
+
+msgid "Modifier mon profil"
+msgstr "Mijn profiel bewerken"
+
+msgid "Adresse"
+msgstr "Adres"
+
+msgid "Mettre à jour"
+msgstr "Bijwerken"
+
+msgid "Envoyer un message à l'admin"
+msgstr "Stuur een bericht naar de beheerder"
+
+msgid "Sujet"
+msgstr "Onderwerp"
+
+msgid "Message"
+msgstr "Bericht"
+
+msgid "Envoyer"
+msgstr "Verzenden"
+
+msgid "Messagerie interne"
+msgstr "Interne berichten"
+
+msgid "Envoyer à l’administrateur"
+msgstr "Verzenden naar de beheerder"
+
+msgid "Prénom"
+msgstr "Voornaam"
+
+msgid "Nom"
+msgstr "Achternaam"
+
+msgid "Téléphone"
+msgstr "Telefoonnummer"
+
+msgid "Récupération de mot de passe"
+msgstr "Wachtwoordherstel"
+
+msgid "Envoyer le lien de réinitialisation"
+msgstr "Stuur resetlink"
+
+msgid "Si cette adresse email est enregistrée chez nous, un message contenant les instructions pour réinitialiser votre mot de passe vient de vous être envoyé."
+msgstr "Als dit e-mailadres bij ons is geregistreerd, is er een bericht met instructies om uw wachtwoord te resetten naar u verzonden."
+
+msgid "Merci de vérifier votre boîte de réception (et éventuellement vos courriers indésirables)."
+msgstr "Controleer uw inbox (en eventueel uw spammap)."
+
+msgid "Choisissez un nouveau mot de passe"
+msgstr "Kies een nieuw wachtwoord"
+
+msgid "Votre mot de passe a été changé avec succès. Vous pouvez maintenant vous"
+msgstr "Uw wachtwoord is succesvol gewijzigd. U kunt nu inloggen."
+
+#: templates/cart.html
+msgid "Ajouter"
+msgstr "Toevoegen"
+
+msgid "au panier"
+msgstr "aan winkelwagen"
+
+msgid "Votre panier"
+msgstr "Je winkelwagen"
+
+msgid "Image"
+msgstr "Afbeelding"
+
+msgid "Photobooth"
+msgstr "Fotohokje"
+
+msgid "Événement"
+msgstr "Evenement"
+
+msgid "Qté"
+msgstr "Aantal"
+
+msgid "Prix/jour"
+msgstr "Prijs/dag"
+
+msgid "Durée"
+msgstr "Duur"
+
+msgid "Total"
+msgstr "Totaal"
+
+msgid "Actions"
+msgstr "Acties"
+
+msgid "Appliquer"
+msgstr "Toepassen"
+
+msgid "Réduction :"
+msgstr "Korting:"
+
+msgid "avec le code"
+msgstr "met de code"
+
+msgid "Passer au paiement"
+msgstr "Doorgaan naar betaling"
+
+msgid "Confirmer ma réservation"
+msgstr "Mijn reservering bevestigen"
+
+msgid "Votre panier est vide."
+msgstr "Je winkelwagen is leeg."
+
+msgid "Ajoutez des photobooths à votre panier avant de passer au paiement."
+msgstr "Voeg fotohokjes toe aan je winkelwagen voordat je doorgaat naar de betaling."
+
+msgid "Retour aux articles"
+msgstr "Terug naar artikelen"
+
+msgid "Merci pour votre réservation !"
+msgstr "Bedankt voor je reservering!"
+
+msgid "Une confirmation vous a été envoyée par email."
+msgstr "Een bevestiging is naar je e-mailadres gestuurd."
+
+msgid "Paiement"
+msgstr "Betaling"
+
+msgid "Payer avec Stripe"
+msgstr "Betalen met Stripe"
+
+msgid "Confirmation de votre panier"
+msgstr "Bevestiging van je winkelwagen"
+
+msgid "Sous-total :"
+msgstr "Subtotaal:"
+
+msgid "Total à payer :"
+msgstr "Totaal te betalen:"
+
+msgid "Client :"
+msgstr "Klant:"
+
+msgid "Paiement confirmé"
+msgstr "Betaling bevestigd"
+
+msgid "Merci pour votre commande. Votre réservation est en cours de traitement."
+msgstr "Bedankt voor je bestelling. Je reservering wordt verwerkt."
+
+msgid "Vous serez redirigé vers votre tableau de bord dans quelques secondes..."
+msgstr "Je wordt binnen enkele seconden doorgestuurd naar je dashboard..."
+
+msgid "Accéder immédiatement au tableau de bord"
+msgstr "Ga meteen naar het dashboard"
+
+msgid "Panier"
+msgstr "Winkelwagen"
+
+msgid "En attente de paiement"
+msgstr "In afwachting van betaling"
+
+msgid "Payée"
+msgstr "Betaald"
+
+msgid "Échec du paiement"
+msgstr "Betaling mislukt"
+
+msgid "Remboursée"
+msgstr "Terugbetaald"
+
+msgid "Annulée par l'utilisateur"
+msgstr "Geannuleerd door de gebruiker"
+
+
+
+

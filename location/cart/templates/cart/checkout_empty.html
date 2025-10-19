@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h2>{% trans "Votre panier est vide" %}</h2>
+  <p>{% trans "Ajoutez des photobooths à votre panier avant de passer au paiement." %}</p>
+  <a href="{% url 'photobooth_list' %}">{% trans "Retour aux articles" %}</a>
+{% endblock %}

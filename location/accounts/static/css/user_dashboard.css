@@ -1,0 +1,32 @@
+/* Sidebar styling */
+.sidebar {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    padding-top: 20px;
+    border-right: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.sidebar .nav-link {
+    color: #333;
+    font-weight: 500;
+    padding: 10px 20px;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.sidebar-heading {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* Smooth scroll to sections */
+html {
+    scroll-behavior: smooth;
+}

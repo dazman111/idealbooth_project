@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}Messagerie interne{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-4">{% trans "Messagerie interne" %}</h1>
+
+<!-- Liste des messages -->
+<div class="space-y-4">
+    {% for message in messages_list %}
+        <div class="p-4 border rounded {% if message.sender == request.user %}bg-blue-100{% else %}bg-gray-100{% endif %}">
+            <div class="flex justify-between">
+                <strong>{{ message.subject }}</strong>
+                <span class="text-sm text-gray-500">{{ message.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <p class="text-sm mt-2">{{ message.body }}</p>
+            <div class="text-xs text-gray-500 mt-1">
+                De : {{ message.sender.username }} → À : {{ message.recipient.username }}
+            </div>
+        </div>
+    {% empty %}
+        <p>{% trans "Aucun message." %}</p>
+    {% endfor %}
+</div>
+
+<!-- Formulaire pour envoyer un message à l'admin -->
+<form method="post" class="mt-6 p-4 border rounded bg-white">
+    {% csrf_token %}
+    <label for="subject" class="block mb-2 font-semibold">{% trans "Sujet" %}</label>
+    <input type="text" name="subject" id="subject" class="w-full border rounded p-2 mb-4" required>
+
+    <label for="body" class="block mb-2 font-semibold">{% trans "Message" %}</label>
+    <textarea name="body" id="body" rows="4" class="w-full border rounded p-2 mb-4" required></textarea>
+
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        {% trans "Envoyer à l’administrateur" %}
+    </button>
+</form>
+
+{% endblock %}

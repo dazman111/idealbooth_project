@@ -1,0 +1,143 @@
+{% load i18n %}
+
+<style>
+    .invoice-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 40px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: white;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .invoice-header img {
+        max-height: 80px;
+    }
+
+    .invoice-details {
+        text-align: right;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin: 0;
+    }
+
+    h2 {
+        font-size: 18px;
+        margin-top: 30px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+
+    .info-block p {
+        margin: 2px 0;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .invoice-table th, .invoice-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .invoice-table th {
+        background-color: #f7f7f7;
+    }
+
+    .total {
+        text-align: right;
+        margin-top: 30px;
+        font-size: 18px;
+    }
+
+    .footer {
+        margin-top: 50px;
+        font-style: italic;
+        color: #888;
+        text-align: center;
+        font-size: 12px;
+    }
+</style>
+
+<div class="invoice-container">
+    <div class="invoice-header">
+        <div>
+            <img src="/static/images/logo11.png" alt="Logo">
+        </div>
+        <div class="invoice-details">
+            <h1>{% trans "Facture n°" %}{{ invoice.id }}</h1>
+            <p><strong>{% trans "Date :" %}</strong> {{ invoice.created_at|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Infos Société -->
+    <section class="info-block">
+        <h2>{% trans "Informations de la société" %}</h2>
+        <p><strong>{% trans "Nom :" %}</strong> {{ invoice.company_name }}</p>
+        <p><strong>{% trans "N° TVA :" %}</strong> {{ invoice.company_vat_number }}</p>
+        <p><strong>{% trans "Téléphone :" %}</strong> {{ invoice.company_phone }}</p>
+        <p><strong>{% trans "Email :" %}</strong> {{ invoice.company_email }}</p>
+        <p><strong>{% trans "Adresse :" %}</strong> {{ invoice.company_address }}</p>
+    </section>
+
+    <!-- Infos Client -->
+    <section class="info-block">
+        <h2>{% trans "Informations du client" %}</h2>
+        <p><strong>{% trans "Nom complet :" %}</strong> {{ invoice.user.get_full_name }}</p>
+        <p><strong>{% trans "Email :" %}</strong> {{ invoice.user.email }}</p>
+    </section>
+
+    <!-- Détails réservation -->
+    {% with reservation=invoice.reservations_linked.first %}
+        {% if reservation %}
+            <section>
+                <h2>{% trans "Détails de la réservation" %}</h2>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Description" %}</th>
+                            <th>{% trans "Date début" %}</th>
+                            <th>{% trans "Date fin" %}</th>
+                            <th>{% trans "Quantité" %}</th>
+                            <th>{% trans "Montant" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ reservation.photobooth.name }}</td>
+                            <td>{{ reservation.start_date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ reservation.end_date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ reservation.quantity }}</td>
+                            <td>{{ invoice.total_amount }} €</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Paiement -->
+    <div class="total">
+        <p><strong>{% trans "Total à payer :" %}</strong> {{ invoice.total_amount }} €</p>
+        <p><strong>{% trans "Statut :" %}</strong> {{ invoice.get_payment_status_display }}</p>
+    </div>
+
+    <div class="footer">
+        {% trans "Merci pour votre confiance. Pour toute question, contactez-nous à" %} {{ invoice.company_email }}.
+    </div>
+</div>

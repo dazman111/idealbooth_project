@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .navbar {
+      background-color: rgba(91, 110, 157, 0.85);
+      border-bottom: 2px solid #B08824;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+  }
+
+  /* Bloc Bienvenue + Connexion plein écran jusqu'au footer */
+  .welcome-login-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 80px 50px 50px 50px;
+      background: linear-gradient(135deg, #5B6E9D, #B08824);
+      color: #fff;
+
+      /* prend tout l'espace disponible entre navbar et footer */
+      flex: 1;
+      min-height: calc(100vh - 60px /*navbar*/ - 120px /*footer*/);
+  }
+
+  .welcome-section {
+      flex: 1;
+      padding: 50px;
+  }
+
+  .welcome-section h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+  }
+
+  .welcome-section p {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      max-width: 600px;
+  }
+
+  .login-container {
+      width: 100%;
+      max-width: 450px;
+      z-index: 2;
+      position: relative;
+  }
+
+  .card {
+      background-color: rgba(33, 37, 41, 0.85);
+      color: #fff;
+  }
+
+  .form-label { color: #ced4da; }
+  .form-control { background-color: #212529; color: #fff; border: 1px solid #495057; }
+  .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25); }
+  a { color: #0d6efd; }
+  a:hover { text-decoration: underline; }
+
+  .btn-primary {
+      background-color: #5B6E9D;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 50px;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      transition: all 0.3s ease;
+  }
+  .btn-primary:hover { background-color: #B08824; color: #000; }
+
+  hr.border-light { border-color: rgba(255,255,255,0.2); }
+
+  .alert-danger {
+      background-color: rgba(220, 53, 69, 0.85);
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      text-align: center;
+  }
+
+  @media (max-width: 768px) {
+      .welcome-login-wrapper { flex-direction: column; padding: 80px 20px 20px 20px; min-height: auto; }
+      .welcome-section { text-align: center; padding: 30px; margin-bottom: 20px; }
+      .welcome-section h1 { font-size: 2rem; }
+      .welcome-section p { font-size: 1rem; max-width: 100%; }
+      .login-container { max-width: 100%; margin-left: 0; }
+  }
+</style>
+
+<div class="welcome-login-wrapper">
+  <!-- Bienvenue -->
+  <div class="welcome-section">
+    <h1>{% trans "Bienvenue sur l'espace connexion" %}</h1>
+    <p>{% trans "Connectez-vous pour accéder à votre espace personnel et gérer vos réservations." %}</p>
+  </div>
+
+  <!-- Formulaire Connexion -->
+  <div class="login-container">
+    <div class="card shadow-lg rounded-4 border-0">
+      <div class="card-body p-5">
+        <h2 class="text-center mb-4 fw-bold">{% trans "Connexion" %}</h2>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} text-center mb-3">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="POST" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="username" class="form-label fw-semibold">{% trans "Nom d'utilisateur" %}</label>
+            <input type="text" name="username" class="form-control" id="username" required placeholder="Entrez votre nom">
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label fw-semibold">{% trans "Mot de passe" %}</label>
+            <input type="password" name="password" class="form-control" id="password" required placeholder="Entrez votre mot de passe">
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mt-3">{% trans "Connexion" %}</button>
+        </form>
+
+        <hr class="my-4 border-light">
+
+        <p class="text-center mb-0">
+          {% trans "Pas encore inscrit ?" %}
+          <a href="{% url 'register' %}" class="fw-semibold">{% trans "Créer un compte" %}</a>
+        </p>
+        <p class="text-center mt-2">
+          <a href="{% url 'password_reset' %}">{% trans "Mot de passe oublié ?" %}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer inchangé comme dans base.html -->
+{% endblock %}

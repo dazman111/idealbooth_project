@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier l'article - Blog{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="mb-4">
+            <h2 class="fw-bold mb-3">✏️ Modifier l'article</h2>
+
+            {% if article.image and article.image.url %}
+                <div class="mb-3 text-center">
+                    <p>Image actuelle :</p>
+                    <img src="{{ article.image.url }}" alt="Image actuelle" class="img-fluid rounded" style="max-width: 200px;">
+                </div>
+            {% endif %}
+
+            <p class="text-muted">Apportez vos changements et cliquez sur "Mettre à jour" pour enregistrer.</p>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.media }}  {# Pour CKEditor, obligatoire #}
+                {{ form.as_p }}
+
+                <h5 class="mt-4">Images supplémentaires</h5>
+                {{ formset.management_form }}
+
+                <div class="row">
+                    {% for subform in formset %}
+                        <div class="col-md-4 mb-3">
+                            <div class="border p-2 rounded">
+                                {{ subform.image.label_tag }} {{ subform.image }}
+
+                                {% if subform.instance.pk and subform.instance.image and subform.instance.image.url %}
+                                    <div class="mt-2">
+                                        <img src="{{ subform.instance.image.url }}" alt="Image existante" style="max-width: 100%; height: auto;">
+                                    </div>
+                                {% endif %}
+
+                                <div class="form-check mt-2">
+                                    {{ subform.DELETE }} {{ subform.DELETE.label_tag }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'manage_blog' %}" class="btn btn-outline-secondary">
+                        ← Retour à la gestion
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Mettre à jour
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    form p {
+        margin-bottom: 1.5rem;
+    }
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+    }
+    .card {
+        background-color: white;
+    }
+    @media (max-width: 576px) {
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

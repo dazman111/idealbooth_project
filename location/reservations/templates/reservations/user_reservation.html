@@ -1,0 +1,57 @@
+{% load i18n %}
+<div class="container mt-5">
+    <h2 class="mb-4">{% trans "Mes Réservations" %}</h2>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>{% trans "Photobooth" %}</th>
+                <th>{% trans "Date" %}</th>
+                <th>{% trans "Statut" %}</th>
+                <th>{% trans "Action" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in page_obj %}
+                <tr>
+                    <td>{{ reservation.photobooth.name }}</td>
+                    <td>{{ reservation.date }}</td>
+                    <td>
+                        {% if reservation.status == 'pending' %}
+                            <span class="badge badge-warning">{% trans "En attente" %}</span>
+                        {% elif reservation.status == 'confirmed' %}
+                            <span class="badge badge-success">{% trans "Confirmée" %}</span>
+                        {% elif reservation.status == 'canceled' %}
+                            <span class="badge badge-danger">{% trans "Annulée" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reservation.status == 'pending' %}
+                            <a href="{% url 'cancel_reservation' reservation.id %}" class="btn btn-danger btn-sm">{% trans "Annuler" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="text-center">{% trans "Aucune réservation trouvée." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <span class="page-link {% if not page_obj.has_previous %}disabled{% endif %}">
+            <a href="?page=1"><<</a>
+        </span>
+        <span class="page-link {% if not page_obj.has_previous %}disabled{% endif %}">
+            <a href="?page={{ page_obj.previous_page_number }}">‹</a>
+        </span>
+
+        <span class="page-link">Page {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+        <span class="page-link {% if not page_obj.has_next %}disabled{% endif %}">
+            <a href="?page={{ page_obj.next_page_number }}">›</a>
+        </span>
+        <span class="page-link {% if not page_obj.has_next %}disabled{% endif %}">
+            <a href="?page={{ page_obj.paginator.num_pages }}">>></a>
+        </span>
+    </div>
+</div>

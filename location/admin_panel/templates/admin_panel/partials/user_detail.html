@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">📄 Détails de l'utilisateur</h2>
+    <div class="bg-white p-4 rounded shadow-sm">
+        <table class="table table-bordered">
+            <tr><th>ID</th><td>{{ user_detail.id }}</td></tr>
+            <tr><th>Nom d'utilisateur</th><td>{{ user_detail.username }}</td></tr>
+            <tr><th>Nom</th><td>{{ user_detail.last_name }}</td></tr>
+            <tr><th>Prénom</th><td>{{ user_detail.first_name }}</td></tr>
+            <tr><th>Adresse</th><td>{{ user_detail.address }}</td></tr>
+            <tr><th>Email</th><td>{{ user_detail.email }}</td></tr>
+            <tr><th>Date d'inscription</th><td>{{ user_detail.date_joined|date:"d/m/Y H:i" }}</td></tr>
+            <tr><th>Dernière connexion</th><td>{{ user_detail.last_login|date:"d/m/Y H:i" }}</td></tr>
+            <tr><th>Statut</th><td>{% if user_detail.is_active %}✅ Actif{% else %}❌ Inactif{% endif %}</td></tr>
+            <tr><th>Staff</th><td>{% if user_detail.is_staff %}🛠️ Oui{% else %}Non{% endif %}</td></tr>
+            <tr><th>Super utilisateur</th><td>{% if user_detail.is_superuser %}🔑 Oui{% else %}Non{% endif %}</td></tr>
+        </table>
+        <a href="{% url 'manage_users' %}" class="btn btn-secondary mt-3">⬅ Retour</a>
+    </div>
+</div>
+{% endblock %}

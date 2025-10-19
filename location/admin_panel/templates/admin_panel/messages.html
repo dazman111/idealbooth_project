@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages Admin{% endblock %}
+
+{% block content %}
+<div class="container px-4 py-5">
+    <h2 class="text-2xl font-bold mb-4">📩 Messages des utilisateurs</h2>
+     <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">⬅ Retour au Dashboard</a>
+
+    {% if unread_count > 0 %}
+        <p class="text-sm text-red-600 mb-3">Vous avez {{ unread_count }} message(s) non lu(s).</p>
+    {% endif %}
+
+    <div>
+        {% for msg in messages_list %}
+            <div class="border p-3 mb-3 rounded {% if not msg.is_read %}bg-yellow-50{% endif %}">
+                <p class="font-semibold">{{ msg.subject }}</p>
+                <p class="text-sm text-gray-600">De: {{ msg.sender.username }} - {{ msg.created_at }}</p>
+                <p class="mb-2">{{ msg.body }}</p>
+
+                {% for reply in msg.replies.all %}
+                    <div class="ml-4 mt-2 p-2 border-l-2 border-gray-300">
+                        <p class="text-sm text-gray-600">Réponse: {{ reply.sender.username }}</p>
+                        <p>{{ reply.body }}</p>
+                    </div>
+                {% endfor %}
+
+                <form method="post" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ msg.id }}">
+                    <textarea name="body" class="w-full border p-2 rounded mb-2" placeholder="Répondre..." required></textarea>
+                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                        Répondre
+                    </button>
+                </form>
+            </div>
+        {% empty %}
+            <p>Aucun message pour le moment.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

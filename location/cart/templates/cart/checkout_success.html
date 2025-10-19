@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="text-center p-8">
+    <h1 class="text-3xl font-bold mb-4">{% trans "Merci pour votre réservation !" %}</h1>
+    <p class="text-lg">{% trans "Une confirmation vous a été envoyée par email." %}</p>
+    <a href="{% url 'user_dashboard' %}" class="mt-6 inline-block bg-primary text-white px-6 py-2 rounded hover:bg-primary-dark">
+        {% trans "Retour au tableau de bord" %}
+    </a>
+</div>
+{% endblock %}

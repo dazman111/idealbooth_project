@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load filters %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+<h2 class="mb-4 fw-bold">{{ article.title }}</h2>
+
+<div class="article-content">
+    {{ article.content|safe }}
+</div>
+
+{% if article.image %}
+    <div class="mt-4">
+        <h5>Image principale</h5>
+        <a href="#" class="lightbox-trigger" data-full="{{ article.image.url }}">
+            <img src="{{ article.image.url }}" alt="Image principale" class="img-fluid rounded" style="max-width: 400px; cursor: pointer;">
+        </a>
+    </div>
+{% else %}
+    <div class="mt-4">
+        <h5>Image principale</h5>
+        <img src="{% static 'images/default-article.jpg' %}" alt="Image par défaut" class="img-fluid rounded" style="max-width: 400px;">
+    </div>
+{% endif %}
+
+
+{% if article.images.all %}
+    <div class="mt-4">
+        <h5>Images supplémentaires</h5>
+        <div class="d-flex flex-wrap">
+            {% for img in article.images.all %}
+                <a href="#" class="me-2 mb-2 lightbox-trigger" data-full="{{ img.image.url }}">
+                    <img src="{{ img.image.url }}" alt="Image supplémentaire" class="img-thumbnail" style="max-width: 200px; height: auto; cursor: pointer;">
+                </a>
+           {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<hr>
+
+
+    <!-- Commentaires -->
+    <h3 class="mt-5 mb-4 text-secondary">{% trans "Commentaires" %}</h3>
+    <ul class="list-group mb-5">
+        {% for comment in comments %}
+            <li class="list-group-item {% if comment.user == article.author %}bg-light border-start border-4 border-primary{% endif %}">
+                <div class="d-flex align-items-start">
+                    <img src="https://ui-avatars.com/api/?name={{ comment.user.username|urlencode }}&background=random&size=48"
+                         class="rounded-circle me-3" width="48" height="48" alt="Avatar">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong class="text-dark">{{ comment.user.username }}</strong>
+                            {% if comment.user == request.user %}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'edit_comment' comment.id %}" class="btn btn-outline-secondary">{% trans "Modifier" %}</a>
+                                    <a href="{% url 'delete_comment' comment.id %}" class="btn btn-outline-danger">🗑️</a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Étoiles -->
+                        <div class="mb-1">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= comment.rating %}
+                                    <span class="text-warning">★</span>
+                                {% else %}
+                                    <span class="text-muted">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <p class="mb-1 text-muted">{{ comment.content }}</p>
+                        <small class="text-secondary">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+                        {% if comment.user == article.author %}
+                            <span class="badge bg-primary ms-2">{% trans "Auteur" %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item">{% trans "Aucun commentaire pour le moment." %}</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Formulaire de commentaire -->
+    {% if user.is_authenticated %}
+        <div class="card shadow-sm rounded-4 p-4 animate-fade-in">
+            <h4 class="mb-3">{% trans "Laisser un commentaire" %}</h4>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_rating" class="form-label">{% trans "Note (1 à 5 étoiles)" %}</label>
+                    {{ form.rating }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_content" class="form-label">{% trans "Commentaire" %}</label>
+                    {{ form.content }}
+                </div>
+                <button type="submit" class="btn btn-primary">{% trans "Commenter" %}</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-warning mt-4 animate-fade-in">
+            {% trans "Vous devez" %}<a href="{% url 'login' %}">{% trans "vous connecter" %}</a> {% trans "pour laisser un commentaire." %}
+        </div>
+    {% endif %}
+
+    <!-- Bouton Like -->
+    <div class="mt-5">
+        {% if user.is_authenticated %}
+            <button id="like-button" data-article-id="{{ article.id }}" class="btn btn-outline-danger">
+                {% if user in article.likes.all %}
+                    {% trans "❤️ Je n'aime plus" %}
+                {% else %}
+                    {% trans "🤍 J’aime" %}
+                {% endif %}
+                (<span id="like-count">{{ article.total_likes }}</span>)
+            </button>
+        {% else %}
+            <p><a href="{% url 'login' %}">{% trans "Connectez-vous" %}</a> {% trans "pour liker cet article." %}</p>
+        {% endif %}
+    </div>
+
+</div>
+<!-- Lightbox CSS -->
+<style>
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+}
+.lightbox:target {
+    display: flex;
+}
+</style>
+
+<!-- Lightbox container -->
+<div id="lightbox" class="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img" src="" alt="Agrandissement">
+</div>
+
+<!-- Lightbox JS -->
+<script>
+    document.querySelectorAll('.lightbox-trigger').forEach(img => {
+        img.addEventListener('click', function (e) {
+            e.preventDefault();
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = this.getAttribute('data-full');
+            lightbox.style.display = 'flex';
+        });
+    });
+</script>
+
+
+<!-- AJAX pour le like -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $('#like-button').click(function(e){
+        e.preventDefault();
+        const articleId = $(this).data('article-id');
+        const button = $(this);
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "like_article" %}',
+            data: {
+                'article_id': articleId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                if (response.liked) {
+                    button.html(`❤️ Je n'aime plus (<span id="like-count">${response.total_likes}</span>)`);
+                } else {
+                    button.html(`🤍 J’aime (<span id="like-count">${response.total_likes}</span>)`);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-gray-800">Gestion des Réservations</h2>
+ <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">⬅ Retour au Dashboard</a>
+
+<!-- MODAL -->
+<div id="reservationModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none" style="display:none;">
+    <div id="modalBody" class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full transform transition-all duration-300 ease-in-out scale-95">
+        <!-- Le contenu sera injecté ici par JavaScript -->
+    </div>
+</div>
+
+<!-- FILTRES -->
+<div class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap gap-4 items-center">
+    <label for="statusFilter" class="font-medium text-gray-700">Filtrer par statut :</label>
+    <select id="statusFilter" class="p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        <option value="">Tous</option>
+        <option value="pending">En attente</option>
+        <option value="confirmed">Confirmée</option>
+        <option value="cancelled">Annulée</option>
+    </select>
+
+    <label for="userFilter" class="font-medium text-gray-700">Utilisateur :</label>
+    <select id="userFilter" class="p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        <option value="">Tous</option>
+        {% for user in users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- TABLEAU DYNAMIQUE -->
+<div id="reservations-table" class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+    {# Ce partial doit contenir la même logique d'affichage de date que le tableau statique ci-dessous #}
+    {% include 'admin_panel/partials/_reservation_table.html' %}
+</div>
+
+<!-- TABLEAU STATIQUE DE RÉSERVATIONS (Utilisé pour l'affichage initial ou de fallback) -->
+<table>
+    <thead>
+        <tr>
+            <th>Utilisateur</th>
+            <th>Photobooth</th>
+            <th>Date</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reservation in reservations %}
+            <tr>
+                <td>{{ reservation.user.username }}</td>
+                <td>{{ reservation.photobooth.name }}</td>
+                {# Correction ici : Utilisation du filtre 'date' et du champ 'start_date' #}
+                <td>{{ reservation.start_date|date:"d M Y H:i" }}</td>
+                <td>{{ reservation.get_status_display }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">Aucune réservation trouvée.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+/* Styles pour le tableau statique, conservés comme demandé */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+thead {
+    background-color: #f0f0f0;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Définition de la fonction getCookie pour récupérer un cookie
+function getCookie(name) {
+    let cookieArr = document.cookie.split(';');
+    for (let i = 0; i < cookieArr.length; i++) {
+        let cookie = cookieArr[i].trim();
+        if (cookie.startsWith(name + '=')) {
+            return cookie.substring(name.length + 1); // Retourne la valeur du cookie
+        }
+    }
+    return null; // Si le cookie n'est pas trouvé, retourne null
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const statusFilter = document.getElementById('statusFilter');
+    const userFilter = document.getElementById('userFilter');
+    const reservationModal = document.getElementById('reservationModal');
+    const modalBody = document.getElementById('modalBody');
+
+    // Fonction pour fermer le modal avec une transition
+    function closeModal() {
+        modalBody.classList.remove('scale-100');
+        modalBody.classList.add('scale-95');
+        reservationModal.classList.remove('opacity-100');
+        reservationModal.classList.add('opacity-0');
+        setTimeout(() => {
+            reservationModal.style.display = 'none';
+            reservationModal.classList.add('pointer-events-none');
+            modalBody.innerHTML = '';
+        }, 300);
+    }
+
+    // Fonction pour afficher un modal de confirmation personnalisé
+    function showConfirmationModal(message, onConfirmCallback) {
+        modalBody.innerHTML = `
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Confirmation requise</h3>
+            <p class="mb-6 text-gray-600">${message}</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirmNo" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200">Non</button>
+                <button id="confirmYes" class="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">Oui</button>
+            </div>
+        `;
+        reservationModal.style.display = 'flex'; // Le rendre visible immédiatement
+        void reservationModal.offsetWidth;
+        reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+        reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+        modalBody.classList.remove('scale-95');
+        modalBody.classList.add('scale-100');
+
+        document.getElementById('confirmYes').onclick = () => {
+            closeModal();
+            onConfirmCallback();
+        };
+        document.getElementById('confirmNo').onclick = () => {
+            closeModal();
+        };
+    }
+
+    // Fonction pour afficher un modal d'information/erreur
+    function showInfoModal(message, isError = false) {
+        modalBody.innerHTML = `
+            <h3 class="text-xl font-semibold mb-4 ${isError ? 'text-red-600' : 'text-green-600'}">${isError ? 'Erreur' : 'Succès'}</h3>
+            <p class="mb-6 text-gray-600">${message}</p>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">Fermer</button>
+            </div>
+        `;
+        reservationModal.style.display = 'flex'; // Le rendre visible immédiatement
+        void reservationModal.offsetWidth;
+        reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+        reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+        modalBody.classList.remove('scale-95');
+        modalBody.classList.add('scale-100');
+    }
+
+    // Récupérer les réservations filtrées et mettre à jour le tableau
+    function fetchFilteredReservations() {
+        const status = statusFilter.value;
+        const user = userFilter.value;
+
+        fetch(`?status=${status}&user=${user}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('reservations-table').innerHTML = data.html;
+            attachActionHandlers(); // Re-attacher les gestionnaires d'événements aux nouveaux boutons
+        })
+        .catch(error => {
+            console.error('Error fetching filtered reservations:', error);
+            showInfoModal("Impossible de charger les réservations. Veuillez réessayer.", true);
+        });
+    }
+
+    // Met à jour le statut de la réservation via AJAX
+    function updateReservationStatus(id, action) {
+        const executeUpdate = () => {
+            fetch(`{% url 'update_reservation_status' %}?status=${statusFilter.value}&user=${userFilter.value}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ id, action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('reservations-table').innerHTML = data.html;
+                    attachActionHandlers();
+                    showInfoModal(data.message || `Réservation ${action === 'confirm' ? 'confirmée' : 'annulée'} avec succès.`);
+                } else {
+                    showInfoModal(`Erreur : ${data.error || 'Une erreur inconnue est survenue.'}`, true);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                showInfoModal("Une erreur réseau est survenue lors de la mise à jour de la réservation.", true);
+            });
+        };
+
+        if (action === 'cancel') {
+            showConfirmationModal("⚠️ Êtes-vous sûr de vouloir annuler cette réservation ?", executeUpdate);
+        } else if (action === 'confirm') {
+            showConfirmationModal("Voulez-vous vraiment confirmer cette réservation ?", executeUpdate);
+        } else {
+            executeUpdate(); 
+        }
+    }
+
+    // Attache les gestionnaires d'événements aux boutons d'action dans le tableau
+    function attachActionHandlers() {
+        const buttons = document.querySelectorAll('.action-btn');
+        buttons.forEach(button => {
+            button.removeEventListener('click', handleActionButtonClick);
+            button.addEventListener('click', handleActionButtonClick);
+        });
+    }
+
+    // Gestionnaire centralisé pour les boutons d'action
+    function handleActionButtonClick(event) {
+        const button = event.currentTarget;
+        const id = button.getAttribute('data-id');
+        const action = button.getAttribute('data-action');
+
+        if (action === 'details') {
+            fetch(`/admin/reservations/${id}/detail/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    modalBody.innerHTML = data.html;
+                    reservationModal.style.display = 'flex';
+                    void reservationModal.offsetWidth;
+                    reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+                    reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+                    modalBody.classList.remove('scale-95');
+                    modalBody.classList.add('scale-100');
+                } else {
+                    showInfoModal(`Erreur : ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reservation details:', error);
+                showInfoModal("Impossible de charger les détails de la réservation.", true);
+            });
+        } else if (action === 'invoice') {
+            window.location.href = `/admin/reservations/${id}/generate-invoice/`;
+        } else {
+            updateReservationStatus(id, action);
+        }
+    }
+
+    // Initialisation : Ajout des écouteurs d'événements pour les filtres et gestionnaires pour les boutons existants
+    statusFilter.addEventListener('change', fetchFilteredReservations);
+    userFilter.addEventListener('change', fetchFilteredReservations);
+    attachActionHandlers();
+});
+
+// Fonction closeModal accessible globalement pour les boutons dans le modal
+function closeModal() {
+    const reservationModal = document.getElementById('reservationModal');
+    const modalBody = document.getElementById('modalBody');
+    modalBody.classList.remove('scale-100');
+    modalBody.classList.add('scale-95');
+    reservationModal.classList.remove('opacity-100');
+    reservationModal.classList.add('opacity-0');
+    setTimeout(() => {
+        reservationModal.style.display = 'none';
+        reservationModal.classList.add('pointer-events-none');
+        modalBody.innerHTML = '';
+    }, 300);
+}
+</script>
+{% endblock %}

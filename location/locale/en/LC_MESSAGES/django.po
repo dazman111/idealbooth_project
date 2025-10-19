@@ -1,0 +1,593 @@
+# English translations for IdealBooth
+msgid ""
+msgstr ""
+"Project-Id-Version: IdealBooth 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-06 10:05+0200\n"
+"PO-Revision-Date: 2025-08-06 14:00+0200\n"
+"Last-Translator: AI Translator <ai@idealbooth.com>\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: photobooth_project/settings.py:231
+msgid "Français"
+msgstr "French"
+
+#: photobooth_project/settings.py:232
+msgid "English"
+msgstr "English"
+
+#: photobooth_project/settings.py:233
+msgid "Nederlands"
+msgstr "Dutch"
+
+#: templates/base.html:7
+msgid "IdealBooth"
+msgstr "IdealBooth"
+
+#: templates/base.html:230
+msgid "Accueil"
+msgstr "Home"
+
+#: templates/base.html:231
+msgid "Photobooths"
+msgstr "Photobooths"
+
+#: templates/base.html:232
+msgid "Blog"
+msgstr "Blog"
+
+#: templates/base.html:246
+msgid "Mon espace"
+msgstr "My Account"
+
+#: templates/base.html:249
+msgid "Messages"
+msgstr "Messages"
+
+#: templates/base.html:252
+msgid "Déconnexion"
+msgstr "Logout"
+
+#: templates/base.html:254
+msgid "Connexion"
+msgstr "Login"
+
+#: templates/base.html:255
+msgid "Inscription"
+msgstr "Register"
+
+#: templates/base.html:348
+msgid "2025 IdealBooth. Tous droits réservés."
+msgstr "2025 IdealBooth. All rights reserved."
+
+#: templates/base.html:350
+msgid "Mentions légales"
+msgstr "Legal notice"
+
+#: templates/base.html:351
+msgid "Politique de confidentialité"
+msgstr "Privacy Policy"
+
+# HOME PAGE
+#: templates/home.html
+msgid "Accueil - IdealBooth"
+msgstr "Home - IdealBooth"
+
+#: templates/home.html
+msgid "Bienvenue sur"
+msgstr "Welcome to"
+
+#: templates/home.html
+msgid "Louez facilement nos photobooths modernes pour vos"
+msgstr "Easily rent our modern photobooths for your"
+
+#: templates/home.html
+msgid "mariages"
+msgstr "weddings"
+
+#: templates/home.html
+msgid "fêtes"
+msgstr "parties"
+
+#: templates/home.html
+msgid "séminaires"
+msgstr "seminars"
+
+#: templates/home.html
+msgid "et plus encore."
+msgstr "and much more."
+
+#: templates/home.html
+msgid "Voir nos Photobooths"
+msgstr "View our Photobooths"
+
+#: templates/home.html
+msgid "Lire le Blog"
+msgstr "Read the Blog"
+
+#: templates/home.html
+msgid "Photobooth 1"
+msgstr "Photobooth 1"
+
+#: templates/home.html
+msgid "Photobooth 2"
+msgstr "Photobooth 2"
+
+#: templates/home.html
+msgid "Photobooth 3"
+msgstr "Photobooth 3"
+
+#: templates/photobooths.html
+msgid "Découvrez nos Photobooths et accessoires"
+msgstr "Discover our Photobooths and accessories"
+
+#: templates/photobooths.html
+msgid "Recherche"
+msgstr "Search"
+
+#: templates/photobooths.html
+msgid "Prix max (€)"
+msgstr "Maximum price (€)"
+
+#: templates/photobooths.html
+msgid "Disponibles uniquement"
+msgstr "Available only"
+
+#: templates/photobooths.html
+msgid "Filtrer"
+msgstr "Filter"
+
+#: templates/photobooths.html
+msgid "Disponible"
+msgstr "Available"
+
+#: templates/photobooths.html
+msgid "Indisponible"
+msgstr "Unavailable"
+
+#: templates/photobooths.html
+msgid "Début"
+msgstr "Start"
+
+#: templates/photobooths.html
+msgid "Fin"
+msgstr "End"
+
+#: templates/photobooths.html
+msgid "Quantité"
+msgstr "Quantity"
+
+#: templates/photobooths.html
+msgid "Ajouter au panier"
+msgstr "Add to cart"
+
+#: templates/photobooths.html
+msgid "Ce photobooth est indisponible"
+msgstr "This photobooth is unavailable"
+
+#: templates/photobooths.html
+msgid "Prévenez-moi"
+msgstr "Warn me"
+
+#: templates/photobooths.html
+msgid "Voir les détails"
+msgstr "See details"
+
+#: templates/photobooths.html
+msgid "Aucun photobooth ne correspond à vos critères."
+msgstr "No photobooth matches your criteria."
+
+#: templates/photobooths.html
+msgid "← Précédent"
+msgstr "← Previous"
+
+#: templates/photobooths.html
+msgid "Suivant →"
+msgstr "Next →"
+
+
+#: templates/blog.html
+msgid "Bienvenue sur notre Blog"
+msgstr "Welcome to our Blog"
+
+#: templates/blog.html
+msgid "Découvrez les dernières actualités, conseils et inspirations de notre équipe."
+msgstr "Discover the latest news, tips, and inspiration from our team."
+
+#: templates/blog.html
+msgid "Lire la suite"
+msgstr "Read more"
+
+#: templates/blog.html
+msgid "Aucun article publié pour le moment. Revenez bientôt !"
+msgstr "No articles published yet. Come back soon!"
+
+#: templates/blog.html
+msgid "Commentaires"
+msgstr "Comments"
+
+#: templates/blog.html
+msgid "Modifier"
+msgstr "Modify"
+
+#: templates/blog.html
+msgid "Auteur"
+msgstr "Author"
+
+#: templates/blog.html
+msgid "Aucun commentaire pour le moment."
+msgstr "No comments yet."
+
+#: templates/blog.html
+msgid "Laisser un commentaire"
+msgstr "Leave a comment"
+
+#: templates/blog.html
+msgid "Note (1 à 5 étoiles)"
+msgstr "Rating (1 to 5 stars)"
+
+#: templates/blog.html
+msgid "Commentaire"
+msgstr "Comment"
+
+#: templates/blog.html
+msgid "Commenter"
+msgstr "Commenter"
+
+#: templates/blog.html
+msgid "Vous devez"
+msgstr "You must."
+
+#: templates/blog.html
+msgid "vous connecter"
+msgstr "connect"
+
+#: templates/blog.html
+msgid "pour laisser un commentaire."
+msgstr "to leave a comment."
+
+#: templates/blog.html
+msgid "❤️ Je n'aime plus"
+msgstr "❤️ I don't like it anymore"
+
+#: templates/blog.html
+msgid "🤍 J’aime"
+msgstr "🤍 I like it"
+
+#: templates/blog.html
+msgid "Connectez-vous"
+msgstr "Log in"
+
+#: templates/blog.html
+msgid "pour liker cet article."
+msgstr "to like this article."
+
+#: templates/accounts.html
+msgid "Changer le mot de passe"
+msgstr "Change password"
+
+#: templates/accounts.html
+msgid "Nouveau mot de passe"
+msgstr "New Password"
+
+#: templates/accounts.html
+msgid "Confirmez le mot de passe"
+msgstr "Confirm password"
+
+#: templates/accounts.html
+msgid "Mettre à jour le mot de passe"
+msgstr "Update password"
+
+#: templates/accounts.html
+msgid "Contacter l'administrateur"
+msgstr "Contact the administrator"
+
+#: templates/accounts.html
+msgid "Envoyez-nous un message et nous vous répondrons rapidement."
+msgstr "Send us a message and we will get back to you promptly."
+
+#: templates/accounts.html
+msgid "Supprimer mon compte"
+msgstr "Delete my account"
+
+#: templates/accounts.html
+msgid "⚠️ Cette action est irréversible. Toutes vos données seront supprimées."
+msgstr "⚠️ This action is irreversible. All your data will be deleted."
+
+#: templates/accounts.html
+msgid "Supprimer mon compte définitivement"
+msgstr "Delete my account permanently"
+
+#: templates/accounts.html
+msgid "Annuler"
+msgstr "Cancel"
+
+#: templates/accounts.html
+msgid "Enregistrer les modifications"
+msgstr "Save changes"
+
+#: templates/accounts.html
+msgid "← Retour au profil"
+msgstr "← Back to profile"
+
+msgid "Nom d'utilisateur"
+msgstr "Username"
+
+msgid "Mot de passe"
+msgstr "Password"
+
+msgid "Pas encore inscrit ?"
+msgstr "Not registered yet?"
+
+msgid "Créer un compte"
+msgstr "Create an account"
+
+msgid "Mot de passe oublié ?"
+msgstr "Forgot password?"
+
+msgid "Mot de passe modifié avec succès !"
+msgstr "Password successfully changed!"
+
+msgid "Retour au tableau de bord"
+msgstr "Back to dashboard"
+
+msgid "Changer mon mot de passe"
+msgstr "Change my password"
+
+msgid "Enregistrer"
+msgstr "Save"
+
+msgid "Mon Profil"
+msgstr "My Profile"
+
+msgid "Nom d'utilisateur :"
+msgstr "Username:"
+
+msgid "Nom :"
+msgstr "Last name:"
+
+msgid "Prénom :"
+msgstr "First name:"
+
+msgid "Email :"
+msgstr "Email:"
+
+msgid "Téléphone :"
+msgstr "Phone:"
+
+msgid "Modifier les informations"
+msgstr "Edit information"
+
+msgid "S'inscrire"
+msgstr "Register"
+
+msgid "Déjà un compte ?"
+msgstr "Already have an account?"
+
+msgid "Se connecter"
+msgstr "Sign in"
+
+msgid "Bienvenue,"
+msgstr "Welcome,"
+
+msgid "Gérez vos commandes, votre profil et contactez l'équipe."
+msgstr "Manage your orders, profile and contact the team."
+
+msgid "Mes Commandes et Paiements"
+msgstr "My Orders and Payments"
+
+msgid "Facture #"
+msgstr "Invoice #"
+
+msgid "Réservation annulée"
+msgstr "Reservation cancelled"
+
+msgid "Montant :"
+msgstr "Amount:"
+
+msgid "Coupon :"
+msgstr "Coupon:"
+
+msgid "€ de réduction"
+msgstr "€ discount"
+
+msgid "Date :"
+msgstr "Date:"
+
+msgid "Réservations"
+msgstr "Booking"
+
+msgid "Du"
+msgstr "From"
+
+msgid "au"
+msgstr "to"
+
+msgid "Statut :"
+msgstr "Status:"
+
+msgid "Télécharger la facture"
+msgstr "Download invoice"
+
+msgid "Aucune réservation liée."
+msgstr "No related reservation."
+
+msgid "Précédent"
+msgstr "Previous"
+
+msgid "Suivant"
+msgstr "Next"
+
+msgid "Aucune commande trouvée."
+msgstr "No order found."
+
+msgid "Modifier mon profil"
+msgstr "Edit my profile"
+
+msgid "Adresse"
+msgstr "Address"
+
+msgid "Mettre à jour"
+msgstr "Update"
+
+msgid "Envoyer un message à l'admin"
+msgstr "Send a message to admin"
+
+msgid "Sujet"
+msgstr "Subject"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Envoyer"
+msgstr "Send"
+
+msgid "Messagerie interne"
+msgstr "Internal messaging"
+
+msgid "Envoyer à l’administrateur"
+msgstr "Send to administrator"
+
+msgid "Prénom"
+msgstr "First name"
+
+msgid "Nom"
+msgstr "Name"
+
+msgid "Téléphone"
+msgstr "Phone"
+
+msgid "Récupération de mot de passe"
+msgstr "Password Recovery"
+
+msgid "Envoyer le lien de réinitialisation"
+msgstr "Send reset link"
+
+msgid "Si cette adresse email est enregistrée chez nous, un message contenant les instructions pour réinitialiser votre mot de passe vient de vous être envoyé."         
+msgstr "If this email address is registered with us, a message with instructions to reset your password has just been sent to you."
+
+msgid "Merci de vérifier votre boîte de réception (et éventuellement vos courriers indésirables)."
+msgstr "Please check your inbox (and possibly your spam folder)."
+
+msgid "Choisissez un nouveau mot de passe"
+msgstr "Choose a new password"
+
+msgid "Votre mot de passe a été changé avec succès. Vous pouvez maintenant vous"
+msgstr "Your password has been successfully changed. You may now log in."
+
+#: templates/cart.html
+msgid "Ajouter"
+msgstr "Add"
+
+msgid "au panier"
+msgstr "to cart"
+
+msgid "Votre panier"
+msgstr "Your cart"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Photobooth"
+msgstr "Photobooth"
+
+msgid "Événement"
+msgstr "Event"
+
+msgid "Qté"
+msgstr "Qty"
+
+msgid "Prix/jour"
+msgstr "Price/day"
+
+msgid "Durée"
+msgstr "Duration"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Appliquer"
+msgstr "Apply"
+
+msgid "Réduction :"
+msgstr "Discount:"
+
+msgid "avec le code"
+msgstr "with the code"
+
+msgid "Passer au paiement"
+msgstr "Proceed to payment"
+
+msgid "Confirmer ma réservation"
+msgstr "Confirm my booking"
+
+msgid "Votre panier est vide."
+msgstr "Your cart is empty."
+
+msgid "Ajoutez des photobooths à votre panier avant de passer au paiement."
+msgstr "Add photo booths to your cart before checking out."
+
+msgid "Retour aux articles"
+msgstr "Back to articles"
+
+msgid "Merci pour votre réservation !"
+msgstr "Thank you for your reservation!"
+
+msgid "Une confirmation vous a été envoyée par email."
+msgstr "A confirmation has been sent to you by email."
+
+msgid "Paiement"
+msgstr "Payment"
+
+msgid "Payer avec Stripe"
+msgstr "Pay with Stripe"
+
+msgid "Confirmation de votre panier"
+msgstr "Confirming your shopping cart"
+
+msgid "Sous-total :"
+msgstr "Subtotal:"
+
+msgid "Total à payer :"
+msgstr "Total to pay:"
+
+msgid "Client :"
+msgstr "Client"
+
+msgid "Paiement confirmé"
+msgstr "Payment confirmed"
+
+msgid "Merci pour votre commande. Votre réservation est en cours de traitement."
+msgstr "Thank you for your order. Your reservation is being processed."
+
+msgid "Vous serez redirigé vers votre tableau de bord dans quelques secondes..."
+msgstr "You will be redirected to your dashboard in a few seconds..."
+
+msgid "Accéder immédiatement au tableau de bord"
+msgstr "Accéder immédiatement au tableau de bord"
+
+msgid "Panier"
+msgstr "Cart"
+
+msgid "En attente de paiement"
+msgstr "Pending payment"
+
+msgid "Payée"
+msgstr "Paid"
+
+msgid "Échec du paiement"
+msgstr "Payment failed"
+
+msgid "Remboursée"
+msgstr "Refunded"
+
+msgid "Annulée par l'utilisateur"
+msgstr "Cancelled by the user"

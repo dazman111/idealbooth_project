@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h2>{% trans "Ajouter" %} {{ photobooth.nom }} {% trans "au panier" %}</h2>
+  <p><strong>Prix :</strong> {{ photobooth.prix }} €</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Ajouter au panier" %}</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Créer un compte" %}{% endblock %}
+
+{% block content %}
+{% load static %}
+<style>
+  body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('/static/images/signup-bg.jpg') no-repeat center center;
+    background-size: cover;
+    color: #f8f9fa;
+  }
+
+  .card {
+    background-color: rgba(33, 37, 41, 0.85);
+    color: #fff;
+  }
+
+  .form-label {
+    color: #ced4da;
+  }
+
+  .form-control {
+    background-color: #212529;
+    color: #fff;
+    border: 1px solid #495057;
+  }
+
+  .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+
+  .form-text {
+    color: #adb5bd;
+  }
+
+  a {
+    color: #0d6efd;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .btn-primary {
+    background-color: #5B6E9D;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #B08824;
+    color: #000;
+  }
+
+  hr.border-light {
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .alert-danger {
+    background-color: rgba(220, 53, 69, 0.85);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .input-group-text {
+    background-color: #343a40;
+    border: 1px solid #495057;
+    cursor: pointer;
+    color: #adb5bd;
+  }
+
+  .input-group-text:hover {
+    background-color: #495057;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-body p-5">
+          <h2 class="text-center mb-4 fw-bold">{% trans "Créer un compte" %}</h2>
+
+          <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+              {% if field.name != 'accept_terms' %}
+                <div class="mb-4">
+                  <label for="{{ field.id_for_label }}" class="form-label d-block fw-semibold">
+                    {{ field.label }}
+                  </label>
+
+                  {% if field.help_text %}
+                    <div class="form-text mb-1" style="margin-top: -0.5rem;">{{ field.help_text }}</div>
+                  {% endif %}
+
+                  {% if field.name == 'password1' or field.name == 'password2' %}
+                    <div class="input-group">
+                      {{ field }}
+                      <span class="input-group-text toggle-password" data-target="{{ field.id_for_label }}">
+                        👁️
+                      </span>
+                    </div>
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+
+                  {% for error in field.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            <div class="mb-3 form-check">
+              {{ form.accept_terms }}
+              <label class="form-check-label" for="{{ form.accept_terms.id_for_label }}">
+                {% trans "J'ai lu et j'accepte les" %}
+                <a href="{% url 'politique_confidentialite' %}" target="_blank">{% trans "politiques de confidentialité" %}</a>
+                {% trans "et les" %}
+                <a href="{% url 'mentions_legales' %}" target="_blank">{% trans "mentions légales" %}</a>.
+              </label>
+              {% for error in form.accept_terms.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">{% trans "S'inscrire" %}</button>
+          </form>
+
+          <hr class="my-4 border-light">
+
+          <p class="text-center mb-0">
+            {% trans "Déjà un compte ?" %}
+            <a href="{% url 'login' %}" class="fw-semibold">{% trans "Se connecter" %}</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggleIcons = document.querySelectorAll('.toggle-password');
+
+    toggleIcons.forEach(icon => {
+      icon.addEventListener('click', function () {
+        const inputId = this.getAttribute('data-target');
+        const input = document.getElementById(inputId);
+
+        if (input) {
+          const isPassword = input.type === "password";
+          input.type = isPassword ? "text" : "password";
+          this.textContent = isPassword ? "/" : "👁️";
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<style>
+/* 🌟 Cartes */
+.card {
+    transition: all 0.3s ease;
+    border: none !important;
+    background: linear-gradient(145deg, #f8f8fa, #f3f4f6);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+/* 🧾 Titres des cartes */
+.card-title i {
+    font-size: 1.3rem;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* 📊 Statistiques */
+.bg-light.border.rounded-3.p-3 {
+    background: #0b7ae9;
+    border: 1px solid #053e77 !important;
+    border-left: 4px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+.bg-light.border.rounded-3.p-3:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+}
+
+/* 💰 Revenu */
+.bg-white.p-4.rounded.shadow-sm.text-end {
+    background: #940a0a;
+    border-left: 5px solid #198754;
+}
+
+/* 🧾 Table */
+.table thead {
+    background-color: #0a6ed3;
+    font-weight: bold;
+}
+.table td, .table th {
+    vertical-align: middle;
+}
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 🪟 Modal animé */
+#reservationModal {
+    transition: opacity 0.3s ease;
+}
+#modalBody {
+    animation: fadeInUp 0.3s ease-in-out forwards;
+}
+@keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+</style>
+
+<div class="container-fluid px-4 py-5">
+    <!-- Affichage des messages uniquement ici -->
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+    <h1 class="mb-4 text-3xl font-semibold text-gray-800">📊 Tableau de bord Administrateur</h1>
+         <!-- 🔽 Place ceci juste après le titre -->
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div>
+        ⚠️ Avant de confirmer une réservation, assurez-vous que le paiement a bien été reçu.
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="reservationModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none" style="display:none;">
+        <div id="modalBody" class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full transform transition-all duration-300 ease-in-out scale-95">
+            <!-- Le contenu sera injecté ici par JavaScript -->
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Card: Réservations -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow rounded-3 p-4 h-100">
+                <h5 class="card-title fw-bold mb-2"><i class="bi bi-calendar-check text-primary"></i> Réservations</h5>
+                <a href="{% url 'admin_panel:manage_reservations' %}" class="stretched-link text-decoration-none text-primary">Gérer les réservations</a>
+            </div>
+        </div>
+
+        <!-- Card: Utilisateurs -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow rounded-3 p-4 h-100">
+                <h5 class="card-title fw-bold mb-2"><i class="bi bi-people-fill text-success"></i> Utilisateurs</h5>
+                <a href="{% url 'admin_panel:manage_users' %}" class="stretched-link text-decoration-none text-success">Voir les utilisateurs</a>
+            </div>
+        </div>
+
+        <!-- Card: Photobooths -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow rounded-3 p-4 h-100">
+                <h5 class="card-title fw-bold mb-2"><i class="bi bi-camera text-danger"></i> Photobooths</h5>
+                <a href="{% url 'admin_panel:manage_photobooths' %}" class="stretched-link text-decoration-none text-danger">Gérer les modèles</a>
+            </div>
+        </div>
+
+        <!-- Card: Blog -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow rounded-3 p-4 h-100">
+                <h5 class="card-title fw-bold mb-2"><i class="bi bi-journal-text text-info"></i> Blog</h5>
+                <a href="{% url 'admin_panel:manage_blog' %}" class="stretched-link text-decoration-none text-info">Gérer le blog</a>
+            </div>
+        </div>
+
+        <!-- Card: Messages -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow rounded-3 p-4 h-100">
+                <h5 class="card-title fw-bold mb-2">
+                    <i class="bi bi-envelope text-warning"></i> Messages
+                </h5>
+                <a href="{% url 'admin_panel:admin_messages' %}" class="stretched-link text-decoration-none text-warning">
+                    Gérer les messages
+                </a>
+            </div>
+        </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Statistiques -->
+        <div class="col-6 col-md-3">
+            <div class="bg-light border rounded-3 p-3 text-center shadow-sm">
+                <div class="fs-4">👥</div>
+                <div class="fw-semibold">Utilisateurs</div>
+                <div class="fs-5 text-primary">{{ total_users }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="bg-light border rounded-3 p-3 text-center shadow-sm">
+                <div class="fs-4">📦</div>
+                <div class="fw-semibold">Réservations</div>
+                <div class="fs-5 text-dark">{{ total_reservations }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="bg-light border rounded-3 p-3 text-center shadow-sm">
+                <div class="fs-4">✅</div>
+                <div class="fw-semibold">Confirmées</div>
+                <div class="fs-5 text-success">{{ total_confirmed }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="bg-light border rounded-3 p-3 text-center shadow-sm">
+                <div class="fs-4" aria-label="Annulées">❌</div>
+                <div class="fw-semibold">Annulées</div>
+                <span id="cancelled-count" role="status" aria-live="polite">{{ total_cancelled }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-4 rounded shadow-sm mb-5 text-end">
+        <strong>💰 Revenu Total :</strong> <span class="fs-4 text-success">{{ total_revenue }} €</span>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <canvas id="reservationChart" height="100"></canvas>
+        </div>
+        <div class="col-md-6 mb-4">
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Tableau des réservations AJAX -->
+    <div class="table-responsive mt-5">
+        <table class="table table-bordered" id="reservations-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Utilisateur</th>
+                    <th>Modele</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    {{ reservations_by_month|json_script:"labels" }}
+    {{ revenue_by_month|json_script:"labels2" }}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Fonction pour récupérer les valeurs des cookies, notamment le jeton CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Déclarer les variables globales pour les éléments du modal
+    let reservationModal;
+    let modalBody;
+
+    // Rend la fonction closeModal accessible globalement pour les boutons dans le modal
+    function closeModal() {
+        if (!reservationModal || !modalBody) {
+            console.error("Modal elements not initialized. Cannot close modal.");
+            return;
+        }
+        modalBody.classList.remove('scale-100');
+        modalBody.classList.add('scale-95');
+        reservationModal.classList.remove('opacity-100');
+        reservationModal.classList.add('opacity-0');
+        setTimeout(() => {
+            reservationModal.style.display = 'none';
+            reservationModal.classList.add('pointer-events-none');
+            modalBody.innerHTML = '';
+        }, 300);
+    }
+
+    // Fonction pour afficher un modal d'information/erreur
+    function showInfoModal(message, isError = false) {
+        if (!reservationModal || !modalBody) {
+            console.error("Modal elements not initialized. Cannot show info modal.");
+            return;
+        }
+
+        modalBody.innerHTML = `
+            <h3 class="text-xl font-semibold mb-4 ${isError ? 'text-red-600' : 'text-green-600'}">${isError ? 'Erreur' : 'Succès'}</h3>
+            <p class="mb-6 text-gray-600">${message}</p>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">Fermer</button>
+            </div>
+        `;
+        reservationModal.style.display = 'flex';
+        void reservationModal.offsetWidth; // Force reflow
+        reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+        reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+        modalBody.classList.remove('scale-95');
+        modalBody.classList.add('scale-100');
+    }
+
+    // Fetches and populates the reservations table
+    function fetchReservationsForDashboard() {
+        // La fonction getCookie est maintenant définie ci-dessus et disponible
+        const csrftoken = getCookie('csrftoken');
+
+        fetch("{% url 'admin_panel:manage_reservations' %}?status=&user=", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            credentials: "include"
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.detail || `Erreur réseau: ${response.status}`); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const tableContainer = document.querySelector("#reservations-table tbody");
+            if (tableContainer) {
+                tableContainer.innerHTML = ""; // Clear existing content before adding new
+                tableContainer.innerHTML = data.html; 
+                attachActionHandlers(); // Re-attach event listeners to new buttons
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors du chargement des réservations :", error);
+            showInfoModal(`Impossible de charger les réservations : ${error.message}`, true);
+        });
+    }
+
+    // **AJOUT : fonction pour rafraîchir le compteur des réservations annulées**
+    function refreshCancelledCount() {
+        fetch("{% url 'admin_panel:cancelled_count_api' %}", {
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            credentials: "include"
+        })
+        .then(response => response.json())
+        .then(data => {
+            const el = document.querySelector("#cancelled-count");
+            if (el) el.textContent = data.cancelled_count;
+        })
+        .catch(error => {
+            console.error("Erreur mise à jour compteur annulées :", error);
+        });
+    }
+
+    // Function to show a custom confirmation modal
+    function showConfirmationModal(message, onConfirmCallback) {
+        if (!reservationModal || !modalBody) {
+            console.error("Modal elements not initialized. Cannot show confirmation modal.");
+            return;
+        }
+
+        modalBody.innerHTML = `
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Confirmation requise</h3>
+            <p class="mb-6 text-gray-600">${message}</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirmNo" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200">Non</button>
+                <button id="confirmYes" class="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">Oui</button>
+            </div>
+        `;
+        reservationModal.style.display = 'flex';
+        void reservationModal.offsetWidth; // Force reflow
+        reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+        reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+        modalBody.classList.remove('scale-95');
+        modalBody.classList.add('scale-100');
+
+        document.getElementById('confirmYes').onclick = () => {
+            closeModal();
+            onConfirmCallback();
+        };
+        document.getElementById('confirmNo').onclick = () => {
+            closeModal();
+        };
+    }
+
+    // Fonctions de confirmation et d'annulation mises à jour
+    function confirmerReservation(id, csrftoken) {
+        showConfirmationModal("Voulez-vous vraiment confirmer cette réservation ?", () => {
+            fetch("{% url 'admin_panel:update_reservation_status' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                credentials: "include",
+                body: JSON.stringify({ id: id, action: "confirm" })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || `Erreur réseau: ${response.status}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showInfoModal(data.message || "Réservation confirmée !");
+                    fetchReservationsForDashboard();
+                } else {
+                    showInfoModal(`Échec de la confirmation : ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                console.error("Erreur de confirmation :", error);
+                showInfoModal(`Échec de la confirmation : ${error.message}`, true);
+            });
+        });
+    }
+
+    function annulerReservation(id, csrftoken) {
+        showConfirmationModal("⚠️ Êtes-vous sûr de vouloir annuler cette réservation ?", () => {
+            fetch("{% url 'admin_panel:update_reservation_status' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                credentials: "include",
+                body: JSON.stringify({ id: id, action: "cancel" })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || `Erreur réseau: ${response.status}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showInfoModal(data.message || "Réservation annulée !");
+                    fetchReservationsForDashboard();
+                    refreshCancelledCount(); // **AJOUT ici pour mettre à jour le compteur annulées**
+                } else {
+                    showInfoModal(`Échec de l'annulation : ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                console.error("Erreur d'annulation :", error);
+                showInfoModal(`Échec de l'annulation : ${error.message}`, true);
+            });
+        });
+    }
+
+    // NEW FUNCTION: Mark reservation's invoice as paid
+    function markReservationAsPaid(id, csrftoken) {
+        showConfirmationModal("Voulez-vous marquer cette réservation comme payée ?", () => {
+            fetch("{% url 'admin_panel:update_reservation_status' %}", { // Reuse the same endpoint
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                credentials: "include",
+                body: JSON.stringify({ id: id, action: "mark_paid" }) // New action
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || `Erreur réseau: ${response.status}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showInfoModal(data.message || "Réservation marquée comme payée !");
+                    fetchReservationsForDashboard(); // Refresh table
+                } else {
+                    showInfoModal(`Échec de la mise à jour du paiement : ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                console.error("Erreur de mise à jour du paiement :", error);
+                showInfoModal(`Échec de la mise à jour du paiement : ${error.message}`, true);
+            });
+        });
+    }
+    
+    // Attaches event handlers to action buttons in the table
+    function attachActionHandlers() {
+        const csrftoken = getCookie('csrftoken'); // getCookie est maintenant défini
+
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.removeEventListener('click', handleActionButtonClick);
+            button.addEventListener('click', handleActionButtonClick);
+        });
+    }
+
+    // Centralized click handler for action buttons
+    function handleActionButtonClick(event) {
+        const button = event.currentTarget;
+        const id = button.getAttribute('data-id');
+        const action = button.getAttribute('data-action');
+        const csrftoken = getCookie('csrftoken'); // getCookie est maintenant défini
+
+        if (action === 'details') {
+            fetch(`{% url 'admin_panel:reservation_detail' 0 %}`.replace('0', id), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    modalBody.innerHTML = data.html;
+                    reservationModal.style.display = 'flex';
+                    void reservationModal.offsetWidth;
+                    reservationModal.classList.remove('opacity-0', 'pointer-events-none');
+                    reservationModal.classList.add('opacity-100', 'pointer-events-auto');
+                    modalBody.classList.remove('scale-95');
+                    modalBody.classList.add('scale-100');
+                } else {
+                    showInfoModal(`Erreur : ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reservation details:', error);
+                showInfoModal("Impossible de charger les détails de la réservation.", true);
+            });
+        } else if (action === 'invoice') {
+            window.location.href = `{% url 'admin_panel:generate_invoice' 0 %}`.replace('0', id);
+        } else if (action === 'confirm') {
+            confirmerReservation(id, csrftoken);
+        } else if (action === 'cancel') {
+            annulerReservation(id, csrftoken);
+        } else if (action === 'mark_paid') { // New action handler
+            markReservationAsPaid(id, csrftoken);
+        }
+    }
+
+    // Initialisation
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialiser les éléments du modal ici, une-fois que le DOM est prêt
+        reservationModal = document.getElementById('reservationModal');
+        modalBody = document.getElementById('modalBody');
+
+        // Graphiques
+        const reservationCtx = document.getElementById('reservationChart');
+        const revenueCtx = document.getElementById('revenueChart');
+        const reservationData = JSON.parse(document.getElementById('labels').textContent);
+        const revenueData = JSON.parse(document.getElementById('labels2').textContent);
+
+        new Chart(reservationCtx, {
+            type: 'bar',
+            data: {
+                labels: reservationData.map(item => new Date(item.month).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })),
+                datasets: [{
+                    label: 'Réservations mensuelles',
+                    data: reservationData.map(item => item.count),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueData.map(item => new Date(item.month).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })),
+                datasets: [{
+                    label: 'Revenus mensuels (€)',
+                    data: revenueData.map(item => item.total),
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+        fetchReservationsForDashboard();
+        refreshCancelledCount(); // Rafraîchir au chargement initial aussi
+    });
+</script>
+
+{% endblock %}

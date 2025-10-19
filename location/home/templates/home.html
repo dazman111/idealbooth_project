@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Accueil - IdealBooth{% endblock %}
+
+{% block content %}
+<!-- STYLES -->
+<style>
+    /* Splash Screen avec formes animées */
+    #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #5B6E9D, #B08824);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        overflow: hidden;
+    }
+
+    #splash-screen img {
+        max-width: 320px;
+        animation: fadeInLogo 1.8s ease-in-out;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+        position: relative;
+        z-index: 10;
+    }
+
+    @keyframes fadeInLogo {
+        0% { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    body.loaded #splash-screen {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    /* Hero Section Animée */
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #5B6E9D, #B08824);
+        padding: 120px 30px;
+        border-radius: 2rem;
+        margin-bottom: 60px;
+        color: #ffffff;
+        text-align: center;
+        z-index: 1;
+    }
+
+    .hero-section h1 {
+        font-size: 3.2rem;
+        font-weight: 800;
+        position: relative;
+        z-index: 5;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .hero-section p.lead {
+        font-size: 1.25rem;
+        position: relative;
+        z-index: 5;
+    }
+
+    .btn-primary, .btn-outline-secondary {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 5;
+    }
+
+    .btn-primary {
+        background-color: #ffffff;
+        color: #5B6E9D;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #B08824;
+        color: #ffffff;
+    }
+
+    .btn-outline-secondary {
+        background-color: transparent;
+        color: #ffffff;
+        border: 2px solid #B08824;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #B08824;
+        color: #ffffff;
+    }
+
+    /* Formes animées derrière le hero */
+    .wave {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.25;
+        animation: float 10s ease-in-out infinite alternate;
+        z-index: 0;
+    }
+
+    .wave.wave1 { width: 500px; height: 500px; background: #000000; top: -200px; left: -150px; animation-duration: 12s; }
+    .wave.wave2 { width: 700px; height: 700px; background: #B08824; bottom: -350px; right: -200px; animation-duration: 18s; }
+    .wave.wave3 { width: 400px; height: 400px; background: #5B6E9D; top: 100px; right: -100px; animation-duration: 15s; }
+
+    @keyframes float {
+        0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+        50% { transform: translateY(20px) translateX(20px) rotate(15deg); }
+        100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+    }
+
+    /* Carousel */
+    .carousel-item {
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .carousel-item img {
+        height: 480px;
+        object-fit: cover;
+        width: 100%;
+        transition: transform 0.5s ease;
+        filter: brightness(0.85);
+    }
+
+    .carousel-item img:hover {
+        transform: scale(1.05);
+        filter: brightness(1);
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .carousel-item img { height: 260px; }
+        .hero-section h1 { font-size: 2.2rem; }
+        .hero-section p.lead { font-size: 1rem; }
+    }
+</style>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen">
+    <img src="{% static 'images/logo11.png' %}" alt="Logo IdealBooth">
+</div>
+
+<script>
+    // Splash uniquement après un clic sur le logo
+    document.addEventListener('DOMContentLoaded', function () {
+        const showSplash = localStorage.getItem('splashFromLogo');
+
+        if (showSplash === 'true') {
+            setTimeout(function () {
+                document.body.classList.add('loaded');
+                localStorage.removeItem('splashFromLogo'); // Réinitialiser
+            }, 2000); // Durée du splash
+        } else {
+            document.body.classList.add('loaded'); // Pas de splash
+        }
+
+        // Si clic sur logo => activer splash pour le prochain chargement
+        const logoLink = document.getElementById('logo-link');
+        if (logoLink) {
+            logoLink.addEventListener('click', function () {
+                localStorage.setItem('splashFromLogo', 'true');
+            });
+        }
+    });
+</script>
+
+
+<!-- CONTENU PRINCIPAL -->
+<div class="container mt-5">
+
+    <!-- HERO -->
+    <div class="hero-section">
+        <!-- Formes animées -->
+        <div class="wave wave1"></div>
+        <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
+
+        <h1>{% trans "Bienvenue sur" %} <span style="color: #B08824;">IdealBooth</span></h1>
+        <p class="lead">
+            {% trans "Louez facilement nos photobooths modernes pour vos" %}
+            <strong>{% trans "mariages" %}</strong>, <strong>{% trans "fêtes" %}</strong>,
+            <strong>{% trans "séminaires" %}</strong> {% trans "et plus encore." %}
+        </p>
+        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+            <a href="{% url 'photobooth_list' %}" class="btn btn-primary shadow-sm">{% trans "Voir nos Photobooths" %}</a>
+            <a href="{% url 'blog_home' %}" class="btn btn-outline-secondary shadow-sm">{% trans "Lire le Blog" %}</a>
+        </div>
+    </div>
+
+    <!-- CAROUSEL -->
+    <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{% static 'images/cre.jpg' %}" class="d-block w-100" alt="Photobooth 1">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/anniversaire.jpg' %}" class="d-block w-100" alt="Photobooth 2">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/evenement.jpg' %}" class="d-block w-100" alt="Photobooth 3">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+
+</div>
+{% endblock %}

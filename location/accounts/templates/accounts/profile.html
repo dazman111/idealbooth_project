@@ -1,0 +1,31 @@
+<!-- accounts/templates/users/profile.html -->
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{% trans "Mon Profil" %}</h2>
+
+    <div class="card p-4">
+        <p><strong>{% trans "Nom d'utilisateur :" %}</strong> {{ request.user.username }}</p>
+        <p><strong>{% trans "Nom :" %}</strong> {{ request.user.first_name }}</p>
+        <p><strong>{% trans "Prénom :" %}</strong> {{ request.user.last_name }}</p>
+        <p><strong>{% trans "Email :" %}</strong> {{ request.user.email }}</p>
+        <p><strong>{% trans "Téléphone :" %}</strong> {{ request.user.phone_number }}</p>
+        {% if request.user.profile_picture %}
+            <p><img src="{{ request.user.profile_picture.url }}" class="img-thumbnail" width="150"></p>
+        {% endif %}
+        {% if request.user.address %}
+            <p><strong>Adresse :</strong> {{ request.user.address }}</p>
+        {% endif %}
+
+        <div class="d-grid gap-2 mt-4">
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">{% trans "Modifier les informations" %}</a>
+            <a href="{% url 'password_change' %}" class="btn btn-outline-secondary">{% trans "Changer le mot de passe" %}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
