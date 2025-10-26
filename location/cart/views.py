@@ -201,13 +201,16 @@ def update_cart_item(request, item_id):
 def cart_detail(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     total = cart.get_total_without_discount()
+    discount = cart.get_discount()
+    coupon = cart.coupon
 
     return render(request, 'cart/cart_detail.html', {
         'cart': cart,
-        'total': total,
+        'total': cart.get_total_price(),
+        'discount': discount,
+        'coupon': coupon,
         'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY,
     })
-
 
 # --- Vues de Paiement ---
 
@@ -216,16 +219,33 @@ def checkout(request):
     messages.warning(request, "La page de checkout directe n'est plus utilisée. Veuillez passer par le panier.")
     return redirect('cart_detail')
 
+from django.views.decorators.http import require_POST
+from django.db import transaction
+from django.http import JsonResponse
+from django.urls import reverse
+from django.utils import timezone
+from datetime import datetime
+from decimal import Decimal
+import stripe
+
+from django.contrib.auth.decorators import login_required
+from .models import Cart, Reservation
+from invoices.models import Invoice
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
 @login_required
 @require_POST
 def create_checkout_session(request):
     user = request.user
-
     cart = Cart.objects.filter(user=user).first()
+
     if not cart or not cart.items.exists():
         return JsonResponse({'error': 'Votre panier est vide.'}, status=400)
 
-    total_amount = Decimal('0.00')
+    # --- Total après réduction ---
+    total_amount = cart.get_total_price()
     line_items = []
 
     for item in cart.items.all():
@@ -236,7 +256,6 @@ def create_checkout_session(request):
         base_price = Decimal(str(item.photobooth.price))
         option_price = Decimal(str(item.option.price)) if item.option else Decimal('0.00')
         item_total = (base_price + option_price) * days * Decimal(item.quantite)
-        total_amount += item_total
 
         unit_amount_cents = int(item_total.quantize(Decimal('0.01')) * 100)
         if unit_amount_cents <= 0:
@@ -253,6 +272,40 @@ def create_checkout_session(request):
             'quantity': 1,
         })
 
+    # --- Si un coupon est appliqué, ajouter la réduction ---
+    discounts = None  # Stripe peut gérer un coupon natif
+    if cart.coupon:
+        try:
+            # Création d’un coupon Stripe à usage unique
+            stripe_coupon = stripe.Coupon.create(
+                name=f"Réduction {cart.coupon.code}",
+                percent_off=cart.coupon.discount,
+                duration="once"
+            )
+
+            stripe_promo = stripe.PromotionCode.create(
+                coupon=stripe_coupon.id,
+                code=cart.coupon.code
+            )
+
+            discounts = [{"promotion_code": stripe_promo.id}]
+
+        except Exception as e:
+            # Si Stripe échoue à créer le coupon, on affiche juste la réduction manuellement
+            discount_amount = cart.get_discount()
+            if discount_amount > 0:
+                line_items.append({
+                    'price_data': {
+                        'currency': 'eur',
+                        'unit_amount': int(-discount_amount * 100),
+                        'product_data': {
+                            'name': f"Réduction ({cart.coupon.code})",
+                        },
+                    },
+                    'quantity': 1,
+                })
+
+    # --- Création facture + réservations ---
     try:
         with transaction.atomic():
             invoice = Invoice.objects.create(
@@ -271,11 +324,13 @@ def create_checkout_session(request):
                     invoice=invoice,
                 )
 
+            # --- Création session Stripe ---
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 customer_email=user.email,
                 line_items=line_items,
                 mode='payment',
+                discounts=discounts if discounts else None,
                 success_url=request.build_absolute_uri(reverse('checkout_success')),
                 cancel_url=request.build_absolute_uri('/panier/'),
                 metadata={'invoice_id': str(invoice.id)},
@@ -285,7 +340,8 @@ def create_checkout_session(request):
 
     except Exception as e:
         return JsonResponse({'error': f'Erreur lors de la création de la session Stripe : {str(e)}'}, status=500)
-    
+
+
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
@@ -474,8 +530,11 @@ def payment_success(request):
 @login_required
 def apply_coupon(request):
     if request.method == "POST":
-        code = request.POST.get("coupon_code").strip()
+        code = request.POST.get("code", "").strip()
         now = timezone.now()
+
+        if not code:
+            return JsonResponse({"success": False, "message": "Veuillez entrer un code promo."})
 
         try:
             coupon = Coupon.objects.get(
@@ -485,15 +544,26 @@ def apply_coupon(request):
                 active=True
             )
         except Coupon.DoesNotExist:
-            messages.error(request, "❌ Ce code promo est invalide ou expiré.")
-            return redirect("cart_detail")
+            return JsonResponse({"success": False, "message": "❌ Ce code promo est invalide ou expiré."})
 
-        cart = Cart.objects.get(user=request.user)
+        cart, _ = Cart.objects.get_or_create(user=request.user)
         cart.coupon = coupon
         cart.save()
-        messages.success(request, f"✅ Coupon '{coupon.code}' appliqué !")
-    return redirect("cart_detail")
 
+        # Calcul du total avec la réduction
+        total_after_discount = round(cart.get_total_price(), 2)
+        discount_amount = round(cart.get_discount(), 2)
+
+        return JsonResponse({
+            "success": True,
+            "message": f"✅ Coupon '{coupon.code}' appliqué avec succès !",
+            "coupon_code": coupon.code,
+            "coupon_percent": coupon.discount,
+            "discount": str(discount_amount),
+            "total_after_discount": str(total_after_discount),
+        })
+
+    return JsonResponse({"success": False, "message": "Requête invalide."})
 
 @login_required
 def remove_coupon(request):
@@ -501,8 +571,14 @@ def remove_coupon(request):
         cart = Cart.objects.get(user=request.user)
         cart.coupon = None
         cart.save()
-        messages.info(request, "🗑 Coupon retiré.")
-    return redirect("cart_detail")
+        return JsonResponse({
+            "success": True,
+            "message": "🗑 Coupon retiré.",
+            "discount": "0",
+            "total_after_discount": str(round(cart.get_total_without_discount(), 2)),
+        })
+    return JsonResponse({"success": False, "message": "Requête invalide."})
+
 
 def confirm_reservation(reservation):
     photobooth = reservation.photobooth

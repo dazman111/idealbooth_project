@@ -12,11 +12,13 @@ class Cart(models.Model):
 
     def get_discount(self):
         if self.coupon:
-            return (self.coupon.discount / 100) * self.get_subtotal_price()
+            return (self.coupon.discount / 100) * self.get_total_without_discount()
         return 0
 
-    def get_total_price(self):
-        return self.get_subtotal_price() - self.get_discount()
+
+    def get_total_with_discount(self):
+        return self.get_total_without_discount() - self.get_discount()
+
     
     def __str__(self):
         return f"Panier de {self.user.username} - créé le {self.created_at.date()}"
