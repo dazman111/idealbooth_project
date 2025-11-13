@@ -270,98 +270,113 @@ a.remove-item:hover {
       {% endfor %}
     </tbody>
   </table>
+<form id="coupon-form" class="apply-coupon-form" method="POST" action="{% url 'apply_coupon' %}">
+  {% csrf_token %}
+  <input type="text" name="code" id="coupon-code" placeholder="Code promo">
+  <button type="submit">{% trans "Appliquer" %}</button>
+</form>
+<div id="messages" class="mt-2 text-sm"></div>
 
-  <form id="coupon-form" class="apply-coupon-form" method="POST" action="{% url 'apply_coupon' %}">
-    {% csrf_token %}
-    <input type="text" name="code" id="coupon-code" placeholder="Code promo">
-    <button type="submit">{% trans "Appliquer" %}</button>
-  </form>
-  <div id="coupon-message" class="mt-2 text-sm text-gray-700"></div>
 
-  <div class="cart-summary">
-    {% trans "Total :" %} <span id="cart-total">{{ total|floatformat:2 }}</span> €
-    <small id="discount-info">
-      {% if coupon %}
-        {% trans "Réduction :" %} -{{ discount|floatformat:2 }} € ({{ coupon.discount_value }}%) {% trans "avec le code" %} « {{ coupon.code }} »
-      {% endif %}
-    </small>
-    <a href="#" id="checkout-button" class="btn-checkout">{% trans "Passer au paiement" %}</a>
+<!-- Message de succès / erreur -->
+<div id="messages" class="mt-2 text-sm"></div>
+
+<!-- Résumé du panier -->
+<div class="cart-summary mt-4 p-4 border rounded">
+  <div class="flex justify-between">
+    <span>{% trans "Sous-total :" %}</span>
+    <span id="subtotal">{{ subtotal|floatformat:2 }}</span> €
   </div>
 
-  <div class="mt-6 text-right">
-    <a href="{% url 'confirm_cart' %}" class="btn-confirm">
-      {% trans "Confirmer ma réservation" %}
-    </a>
+  <div id="discount-row" class="flex justify-between text-green-600 font-medium {% if not coupon %}hidden{% endif %}">
+    <span>Réduction (<span id="coupon-code-display">{% if coupon %}{{ coupon.code }}{% endif %}</span>) :</span>
+    <span>
+        -{% if coupon %}
+            {{ coupon.discount_value|floatformat:0 }}
+            {% if coupon.discount_type == 'percent' %}%{% endif %}
+        {% else %}
+            0
+        {% endif %}
+    </span>
   </div>
 
-  {% else %}
-  <p>{% trans "Votre panier est vide." %}</p>
-  {% endif %}
+
+  <div class="flex justify-between font-bold mt-2">
+    <span>{% trans "Total :" %}</span>
+    <span id="total">{{ final_total|floatformat:2 }}</span> €
+  </div>
+
+  <a href="#" id="checkout-button" class="btn-checkout mt-4 block">{% trans "Passer au paiement" %}</a>
 </div>
+
+<div class="mt-6 text-right">
+  <a href="{% url 'confirm_cart' %}" class="btn-confirm">
+    {% trans "Confirmer ma réservation" %}
+  </a>
+</div>
+{% endif %}
+
+
+<!-- Script AJAX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('coupon-form');
+  if (!form) return;
+
+  const messagesDiv = document.getElementById('messages');
+  const subtotalEl = document.getElementById('subtotal');
+  const discountRow = document.getElementById('discount-row');
+  const discountAmount = document.getElementById('discount-amount');
+  const couponDisplay = document.getElementById('coupon-code-display');
+  const totalEl = document.getElementById('total');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const code = document.getElementById('coupon-code').value.trim();
+    if (!code) return;
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+      const response = await fetch("/coupon/appliquer/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "X-Requested-With": "XMLHttpRequest",
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code: code })
+      });
+
+      const data = await response.json();
+
+      messagesDiv.innerHTML = `
+        <div class="p-3 mb-3 rounded text-white ${data.success ? 'bg-green-500' : 'bg-red-500'}">
+          ${data.message}
+        </div>
+      `;
+
+      if (data.success) {
+        discountRow.classList.remove('hidden');
+        discountAmount.textContent = parseFloat(data.coupon_percent).toFixed(0);
+        couponDisplay.textContent = data.coupon_code;
+        subtotalEl.textContent = parseFloat(data.subtotal).toFixed(2) + " €";
+        totalEl.textContent = parseFloat(data.total).toFixed(2) + " €";
+      }
+    } catch (error) {
+      console.error("Erreur réseau ou JSON :", error);
+      messagesDiv.innerHTML = `
+        <div class="p-3 mb-3 rounded text-white bg-red-500">
+          Erreur de communication avec le serveur.
+        </div>
+      `;
+    }
+  });
+});
+
+</script>
 
 {% endblock %}
 
-<script>
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-const csrftoken = getCookie('csrftoken');
-
-document.getElementById('coupon-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  const code = document.getElementById('coupon-code').value.trim();
-  const messageBox = document.getElementById('coupon-message');
-
-  if (!code) {
-    messageBox.textContent = "Veuillez entrer un code promo.";
-    messageBox.classList.remove('text-green-600');
-    messageBox.classList.add('text-red-600');
-    return;
-  }
-
-  fetch("{% url 'apply_coupon' %}", {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": csrftoken,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({ code: code })
-  })
-  .then(response => response.json())
-  .then(data => {
-    messageBox.textContent = data.message;
-
-    if (data.success) {
-      messageBox.classList.remove('text-red-600');
-      messageBox.classList.add('text-green-600');
-
-      document.getElementById("cart-total").textContent = data.total_after_discount;
-
-      document.getElementById("discount-info").innerHTML = `
-        Réduction : -${data.discount} € (${data.coupon_percent}%) avec le code « ${data.coupon_code} »
-      `;
-    } else {
-      messageBox.classList.remove('text-green-600');
-      messageBox.classList.add('text-red-600');
-    }
-  })
-  .catch(() => {
-    messageBox.textContent = "Erreur réseau. Veuillez réessayer.";
-    messageBox.classList.remove('text-green-600');
-    messageBox.classList.add('text-red-600');
-  });
-});
-</script>

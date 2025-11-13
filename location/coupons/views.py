@@ -1,49 +1,72 @@
-from django.shortcuts import render
+import json
+from decimal import Decimal
 
-# Create your views here.
 from datetime import date
-from django.shortcuts import redirect
 from django.http import JsonResponse
 from .models import Coupon
-from cart.models import Cart  # adapte selon ton projet
+from cart.models import Cart
 
 def apply_coupon(request):
-    code = request.POST.get('code', '').strip()
+    code = None
+
+    # ✅ Si c'est une requête JSON (fetch)
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+            code = data.get('code', '').strip()
+        except Exception:
+            return JsonResponse({'success': False, 'message': "Format JSON invalide."})
+
+    # ✅ Sinon (soumission HTML classique)
+    if not code:
+        code = request.POST.get('code', '').strip()
 
     if not code:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'message': "Veuillez entrer un code."})
-        return redirect('cart_detail')
+        return JsonResponse({'success': False, 'message': "Veuillez entrer un code."})
 
     try:
-        today = date.today()  # ✅ définition ici
+        today = date.today()
         coupon = Coupon.objects.get(
             code__iexact=code,
             actif=True,
-            date_fin__gte=today  # ✅ utilisation ici
+            date_fin__gte=today
         )
 
+        # Sauvegarde dans la session
         request.session['coupon_id'] = coupon.id
 
+        # Récupération du panier
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
-        discount = cart.get_discount_amount()
-        total = cart.get_total_without_discount()
+        # Calcul du sous-total
+        subtotal = cart.get_total_without_discount()
 
+        # Calcul de la réduction
+        if coupon.discount_type == 'percent':
+            discount_amount = subtotal * (Decimal(coupon.discount_value) / Decimal(100))
+        elif coupon.discount_type == 'fixed':
+            discount_amount = Decimal(coupon.discount_value)
+        else:
+            discount_amount = Decimal(0)
 
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': f"Coupon « {coupon.code} » appliqué avec succès.",
-                'discount': f"{discount:.2f}",
-                'coupon_code': coupon.code,
-                'coupon_percent': coupon.discount_value,
-                'total': f"{total:.2f}"
-            })
+        # Calcul du total
+        total = max(subtotal - discount_amount, 0)
 
-        return redirect('cart_detail')
+        # Sauvegarde dans le panier
+        cart.coupon = coupon
+        cart.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f"Coupon « {coupon.code} » appliqué avec succès.",
+            'coupon_code': coupon.code,
+            'coupon_percent': float(coupon.discount), 
+            'discount_type': coupon.discount_type,
+            'discount_value': float(coupon.discount_value),
+            'discount_amount': round(discount_amount, 2),  # clé utilisable directement
+            'subtotal': round(subtotal, 2),               # clé utilisable directement
+            'total': round(total, 2),                     # clé utilisable directement
+        })
 
     except Coupon.DoesNotExist:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'message': "Ce coupon est invalide ou expiré."})
-        return redirect('cart_detail')
+        return JsonResponse({'success': False, 'message': "Ce coupon est invalide ou expiré."})

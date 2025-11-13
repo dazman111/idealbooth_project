@@ -11,7 +11,7 @@ urlpatterns = [
 
     
 
-    path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
     path("remove-coupon/", views.remove_coupon, name="remove_coupon"),
 
     path('confirmation/', views.confirm_cart, name='confirm_cart'),
@@ -21,7 +21,9 @@ urlpatterns = [
     path('create-checkout-session/', views.create_checkout_session, name='create_checkout_session'),
     path('checkout/success/', views.checkout_success, name='checkout_success'),
     path('success/', views.payment_success, name='payment_success'),
-
     # Stripe webhook
-    path('webhook/', views.stripe_webhook, name='stripe_webhook'),
+    path('cart/stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
+
+
+
 ]

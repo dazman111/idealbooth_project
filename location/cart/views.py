@@ -11,7 +11,14 @@ from datetime import datetime
 from django.contrib import messages
 from django.urls import reverse
 from reservations.models import Reservation, Invoice  # Importe tes modèles mis à jour
+from django.views.decorators.http import require_POST
+from coupons.models import Coupon
+from django.utils import timezone
+from django.db import transaction
+from decimal import Decimal, ROUND_HALF_UP
+
 import stripe
+
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -196,18 +203,20 @@ def update_cart_item(request, item_id):
 
     return redirect('cart_detail')
 
-
 @login_required
 def cart_detail(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
-    total = cart.get_total_without_discount()
+
+    subtotal = cart.get_total_without_discount()
     discount = cart.get_discount()
+    final_total = cart.get_total_price()
     coupon = cart.coupon
 
     return render(request, 'cart/cart_detail.html', {
         'cart': cart,
-        'total': cart.get_total_price(),
+        'subtotal': subtotal,
         'discount': discount,
+        'final_total': final_total,
         'coupon': coupon,
         'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY,
     })
@@ -219,21 +228,6 @@ def checkout(request):
     messages.warning(request, "La page de checkout directe n'est plus utilisée. Veuillez passer par le panier.")
     return redirect('cart_detail')
 
-from django.views.decorators.http import require_POST
-from django.db import transaction
-from django.http import JsonResponse
-from django.urls import reverse
-from django.utils import timezone
-from datetime import datetime
-from decimal import Decimal
-import stripe
-
-from django.contrib.auth.decorators import login_required
-from .models import Cart, Reservation
-from invoices.models import Invoice
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
 
 @login_required
 @require_POST
@@ -244,73 +238,32 @@ def create_checkout_session(request):
     if not cart or not cart.items.exists():
         return JsonResponse({'error': 'Votre panier est vide.'}, status=400)
 
-    # --- Total après réduction ---
-    total_amount = cart.get_total_price()
-    line_items = []
+    # Total après réduction
+    total_after_discount = cart.get_total_price()
+    unit_amount_cents = int((total_after_discount * Decimal('100')).to_integral_value(rounding=ROUND_HALF_UP))
 
-    for item in cart.items.all():
-        start_dt = datetime.combine(item.start_date, datetime.min.time())
-        end_dt = datetime.combine(item.end_date, datetime.max.time())
-        days = Decimal((end_dt - start_dt).days + 1)
+    if unit_amount_cents <= 0:
+        return JsonResponse({'error': 'Le montant du panier est invalide.'}, status=400)
+        
 
-        base_price = Decimal(str(item.photobooth.price))
-        option_price = Decimal(str(item.option.price)) if item.option else Decimal('0.00')
-        item_total = (base_price + option_price) * days * Decimal(item.quantite)
-
-        unit_amount_cents = int(item_total.quantize(Decimal('0.01')) * 100)
-        if unit_amount_cents <= 0:
-            return JsonResponse({'error': 'Un des articles a un prix invalide.'}, status=400)
-
-        line_items.append({
-            'price_data': {
-                'currency': 'eur',
-                'unit_amount': unit_amount_cents,
-                'product_data': {
-                    'name': f'Photobooth: {item.photobooth.name} ({item.start_date} → {item.end_date})',
-                },
+    # Création d'un seul line_item pour tout le panier
+    line_items = [{
+        'price_data': {
+            'currency': 'eur',
+            'product_data': {
+                'name': f'Panier de {cart.user.username}',
             },
-            'quantity': 1,
-        })
+            'unit_amount': unit_amount_cents,
+        },
+        'quantity': 1,
+    }]
 
-    # --- Si un coupon est appliqué, ajouter la réduction ---
-    discounts = None  # Stripe peut gérer un coupon natif
-    if cart.coupon:
-        try:
-            # Création d’un coupon Stripe à usage unique
-            stripe_coupon = stripe.Coupon.create(
-                name=f"Réduction {cart.coupon.code}",
-                percent_off=cart.coupon.discount,
-                duration="once"
-            )
-
-            stripe_promo = stripe.PromotionCode.create(
-                coupon=stripe_coupon.id,
-                code=cart.coupon.code
-            )
-
-            discounts = [{"promotion_code": stripe_promo.id}]
-
-        except Exception as e:
-            # Si Stripe échoue à créer le coupon, on affiche juste la réduction manuellement
-            discount_amount = cart.get_discount()
-            if discount_amount > 0:
-                line_items.append({
-                    'price_data': {
-                        'currency': 'eur',
-                        'unit_amount': int(-discount_amount * 100),
-                        'product_data': {
-                            'name': f"Réduction ({cart.coupon.code})",
-                        },
-                    },
-                    'quantity': 1,
-                })
-
-    # --- Création facture + réservations ---
+    # Création facture + réservations
     try:
         with transaction.atomic():
             invoice = Invoice.objects.create(
                 user=user,
-                total_amount=total_amount,
+                total_amount=total_after_discount,
                 payment_status='pending'
             )
 
@@ -324,13 +277,12 @@ def create_checkout_session(request):
                     invoice=invoice,
                 )
 
-            # --- Création session Stripe ---
+            # Création session Stripe
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 customer_email=user.email,
                 line_items=line_items,
                 mode='payment',
-                discounts=discounts if discounts else None,
                 success_url=request.build_absolute_uri(reverse('checkout_success')),
                 cancel_url=request.build_absolute_uri('/panier/'),
                 metadata={'invoice_id': str(invoice.id)},
@@ -346,138 +298,126 @@ def create_checkout_session(request):
 @require_POST
 def stripe_webhook(request):
     """
-    Gère les événements webhook de Stripe pour mettre à jour les statuts de paiement,
-    vider le panier, confirmer les réservations et vérifier la disponibilité du stock.
+    Webhook Stripe : met automatiquement à jour la facture après paiement réussi,
+    confirme les réservations, vide le panier et envoie un e-mail.
     """
     import json
-   
+
     payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-    
-    logger.info("Stripe webhook brut reçu :")
-    logger.info(request.body.decode())  # Affiche le JSON brut reçu
 
-
-   
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-        logger.info(f"Stripe webhook reçu : {event['type']}")
-    except (ValueError, stripe.error.SignatureVerificationError) as e:
-        logger.warning(f"Signature Stripe invalide ou payload malformé : {e}")
-        # --- DEBUG LOCAL UNIQUEMENT ---
+        logger.info(f"Webhook Stripe reçu : {event['type']}")
+    except (ValueError, stripe.error.SignatureVerificationError):
+        # Mode fallback local (utile en dev)
         try:
             event = json.loads(payload)
-            logger.info("Mode debug : payload analysé sans vérification de signature")
-            logger.info(json.dumps(event, indent=2))
-        except Exception as json_e:
-            logger.error(f"Impossible de parser le JSON du webhook : {json_e}")
+            logger.warning("Webhook traité sans vérification de signature (mode debug).")
+        except Exception as e:
+            logger.error(f"Erreur de parsing JSON : {e}")
             return HttpResponse(status=400)
-    except Exception as e:
-        logger.error("Erreur inconnue dans le traitement du webhook", exc_info=True)
-        return HttpResponse(status=400)
 
-    # --- Paiement complété ---
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        payment_intent_id = session.get('payment_intent')
-        metadata = session.get('metadata') or {}
-        invoice_id = metadata.get('invoice_id')
+    # --- 1️⃣ Paiement complété ---
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        payment_intent_id = session.get("payment_intent")
+        metadata = session.get("metadata") or {}
+        invoice_id = metadata.get("invoice_id")
 
         if not invoice_id:
-            logger.error(f"Webhook: 'invoice_id' manquant dans la session {session.get('id')}.")
+            logger.error("invoice_id manquant dans la session Stripe.")
             return HttpResponse(status=400)
 
-        with transaction.atomic():
-            try:
-                invoice = Invoice.objects.select_for_update().get(id=invoice_id)
-            except Invoice.DoesNotExist:
-                logger.error(f"Facture (ID: {invoice_id}) introuvable.")
-                return HttpResponse(status=404)
+        try:
+            invoice = Invoice.objects.select_for_update().get(id=invoice_id)
+        except Invoice.DoesNotExist:
+            logger.error(f"Facture introuvable : ID={invoice_id}")
+            return HttpResponse(status=404)
 
-            # Évite le double traitement
-            if invoice.payment_status == 'paid':
-                return HttpResponse(status=200)
+        # Évite un double traitement
+        if invoice.payment_status == "paid":
+            return HttpResponse(status=200)
 
-            expected_total_cents = int(invoice.total_amount * 100)
-            actual_total_cents = session.get('amount_total')
+        try:
+            # --- Vérification du paiement Stripe ---
+            payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
 
-            if actual_total_cents != expected_total_cents:
-                logger.error(f"Montant payé ({actual_total_cents}) ≠ attendu ({expected_total_cents}) pour la facture {invoice.id}.")
-                invoice.payment_status = 'failed'
-                invoice.save()
-                return HttpResponse(status=400)
+            if payment_intent["status"] == "succeeded":
+                with transaction.atomic():
+                    invoice.payment_status = "paid"
+                    invoice.stripe_checkout_session_id = session.get("id")
+                    invoice.stripe_payment_intent_id = payment_intent_id
+                    invoice.updated_at = now()
+                    invoice.save()
+                    logger.info(f"Facture {invoice.id} marquée comme PAYÉE automatiquement.")
 
-            if session.get('payment_status') == 'paid':
-                # Mise à jour de la facture
-                invoice.payment_status = 'paid'
-                invoice.stripe_checkout_session_id = session.get('id')
-                invoice.stripe_payment_intent_id = payment_intent_id
-                invoice.updated_at = now()
-                invoice.save()
-                logger.info(f"Facture {invoice.id} mise à jour au statut 'paid'.")
+                    # --- Gestion du coupon ---
+                    user_cart = Cart.objects.filter(user=invoice.user).first()
+                    if user_cart and user_cart.coupon:
+                        coupon = user_cart.coupon
+                        coupon.utilisations_effectuees += 1
+                        if coupon.utilisations_effectuees >= coupon.utilisation_max:
+                            coupon.actif = False
+                        coupon.save()
+                        logger.info(f"Coupon {coupon.code} utilisé ({coupon.utilisations_effectuees}/{coupon.utilisation_max})")
 
-                # Confirmer les réservations et vérifier le stock final
-                confirmed_reservations = []
-                for res in invoice.reservations_linked.all():
-                    if res.photobooth.is_available_for_dates(res.start_date, res.end_date, res.quantity):
-                        res.status = Reservation.CONFIRMED
+                    # --- 4️⃣ Confirmation des réservations ---
+                    confirmed_reservations = []
+                    for res in invoice.reservations_linked.all():
+                        if res.photobooth.is_available_for_dates(res.start_date, res.end_date, res.quantity):
+                            res.status = Reservation.CONFIRMED
+                        else:
+                            res.status = Reservation.CANCELED
                         res.save()
                         confirmed_reservations.append(res)
-                        logger.info(f"Réservation {res.id} confirmée.")
-                    else:
-                        res.status = Reservation.CANCELED
-                        res.save()
-                        logger.warning(f"Réservation {res.id} annulée faute de stock suffisant.")
 
-                # Vider le panier
-                try:
-                    cart = Cart.objects.get(user=invoice.user)
-                    cart.items.all().delete()
-                    logger.info(f"Panier vidé pour l'utilisateur {invoice.user.email}.")
-                except Cart.DoesNotExist:
-                    logger.warning(f"Aucun panier trouvé pour {invoice.user.email}.")
+                    # --- 5️⃣ Vider le panier ---
+                    if user_cart:
+                        user_cart.items.all().delete()
+                        logger.info(f"Panier vidé pour {invoice.user.email}")
 
-                # Envoi e-mail confirmation
-                if invoice.user and confirmed_reservations:
-                    subject = "Confirmation de votre réservation IdealBooth"
-                    html_message = render_to_string('emails/confirmation_reservation.html', {
-                        'user': invoice.user,
-                        'invoice': invoice,
-                        'reservations': confirmed_reservations,
-                    })
-                    plain_message = strip_tags(html_message)
-                    try:
-                        send_mail(
-                            subject, plain_message, settings.DEFAULT_FROM_EMAIL,
-                            [invoice.user.email], html_message=html_message
-                        )
-                        logger.info(f"E-mail de confirmation envoyé à {invoice.user.email}.")
-                    except Exception as mail_e:
-                        logger.error(f"Erreur lors de l'envoi e-mail à {invoice.user.email}: {mail_e}", exc_info=True)
+                    # --- 6️⃣ Envoi email confirmation ---
+                    if invoice.user and confirmed_reservations:
+                        subject = "Confirmation de votre réservation IdealBooth"
+                        html_message = render_to_string("emails/confirmation_reservation.html", {
+                            "user": invoice.user,
+                            "invoice": invoice,
+                            "reservations": confirmed_reservations,
+                        })
+                        plain_message = strip_tags(html_message)
+                        try:
+                            send_mail(
+                                subject, plain_message, settings.DEFAULT_FROM_EMAIL,
+                                [invoice.user.email], html_message=html_message
+                            )
+                            logger.info(f"E-mail de confirmation envoyé à {invoice.user.email}.")
+                        except Exception as mail_e:
+                            logger.error(f"Erreur e-mail : {mail_e}")
 
             else:
-                invoice.payment_status = 'failed'
+                # Paiement non réussi
+                invoice.payment_status = "failed"
                 invoice.save()
-                logger.warning(f"Paiement non confirmé pour facture {invoice.id}.")
+                logger.warning(f"⚠️ Paiement échoué pour la facture {invoice.id}")
+
+        except Exception as e:
+            logger.error(f"❌ Erreur lors du traitement du webhook Stripe : {e}", exc_info=True)
+            return HttpResponse(status=500)
+
+    # --- 7️⃣ Paiement échoué ---
+    elif event["type"] == "payment_intent.payment_failed":
+        payment_intent = event["data"]["object"]
+        try:
+            invoice = Invoice.objects.get(stripe_payment_intent_id=payment_intent.get("id"))
+            if invoice.payment_status != "paid":
+                invoice.payment_status = "failed"
+                invoice.save()
                 for res in invoice.reservations_linked.all():
                     res.status = Reservation.CANCELED
                     res.save()
-                    logger.info(f"Réservation {res.id} annulée suite à paiement non confirmé.")
-
-    # --- Paiement échoué ---
-    elif event['type'] == 'payment_intent.payment_failed':
-        payment_intent = event['data']['object']
-        try:
-            invoice = Invoice.objects.get(stripe_payment_intent_id=payment_intent.get('id'))
-            if invoice.payment_status != 'paid':
-                invoice.payment_status = 'failed'
-                invoice.save()
-                for res in invoice.reservations_linked.all():
-                    if res.status != Reservation.CONFIRMED:
-                        res.status = Reservation.CANCELED
-                        res.save()
-                logger.info(f"Facture {invoice.id} et réservations annulées suite à échec du Payment Intent.")
+                logger.info(f"💀 Facture {invoice.id} et réservations annulées (échec paiement).")
         except Invoice.DoesNotExist:
             logger.warning(f"Aucune facture trouvée pour PaymentIntent {payment_intent.get('id')}.")
 
@@ -510,10 +450,15 @@ def confirm_cart(request):
         messages.warning(request, "Votre panier est vide. Veuillez ajouter des articles avant de confirmer.")
         return redirect('cart_detail') # Redirige vers la vue détaillée du panier
 
-    total_price = cart.get_total_without_discount()
+    total_without_discount = cart.get_subtotal_price()
+    discount = cart.get_discount()
+    total_price = cart.get_total_price()
+
 
     return render(request, 'cart/confirm_cart.html', {
         'cart': cart,
+        'total_without_discount': total_without_discount,
+        'discount': discount,
         'total_price': total_price,
         "STRIPE_PUBLISHABLE_KEY": settings.STRIPE_PUBLISHABLE_KEY,
     })
@@ -527,77 +472,79 @@ def payment_success(request):
     messages.success(request, "Paiement réussi ! Votre commande est en cours de traitement.")
     return render(request, 'cart/payment_success.html') # Assure-toi que ce template existe
 
+# cart/views.py
 @login_required
 def apply_coupon(request):
-    if request.method == "POST":
-        code = request.POST.get("code", "").strip()
-        now = timezone.now()
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            code = data.get('code', '').strip()
+        except Exception:
+            return JsonResponse({'success': False, 'message': "Requête invalide."})
 
         if not code:
-            return JsonResponse({"success": False, "message": "Veuillez entrer un code promo."})
+            return JsonResponse({'success': False, 'message': "Veuillez entrer un code."})
 
         try:
-            coupon = Coupon.objects.get(
-                code__iexact=code,
-                valid_from__lte=now,
-                valid_to__gte=now,
-                active=True
-            )
+            coupon = Coupon.objects.get(code__iexact=code, actif=True)
         except Coupon.DoesNotExist:
-            return JsonResponse({"success": False, "message": "❌ Ce code promo est invalide ou expiré."})
+            return JsonResponse({'success': False, 'message': "Code promo invalide."})
 
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        now = timezone.now()
+        if coupon.date_debut > now or coupon.date_fin < now:
+            return JsonResponse({'success': False, 'message': "Ce code n'est pas valable actuellement."})
+
+        cart = Cart.objects.filter(user=request.user).first()
+        if not cart or not cart.items.exists():
+            return JsonResponse({'success': False, 'message': "Votre panier est vide."})
+
+        subtotal = sum(item.subtotal for item in cart.items.all())
+
+        # Calcul selon le type de réduction
+        if coupon.discount_type == 'percent':
+            discount_amount = subtotal * (float(coupon.discount_value) / 100)
+        elif coupon.discount_type == 'fixed':
+            discount_amount = float(coupon.discount_value)
+        else:
+            discount_amount = 0
+
+        total = max(subtotal - discount_amount, 0)
+
+        # Sauvegarde du coupon dans le panier
         cart.coupon = coupon
         cart.save()
 
-        # Calcul du total avec la réduction
-        total_after_discount = round(cart.get_total_price(), 2)
-        discount_amount = round(cart.get_discount(), 2)
-
         return JsonResponse({
-            "success": True,
-            "message": f"✅ Coupon '{coupon.code}' appliqué avec succès !",
-            "coupon_code": coupon.code,
-            "coupon_percent": coupon.discount,
-            "discount": str(discount_amount),
-            "total_after_discount": str(total_after_discount),
+            'success': True,
+            'message': f"Le code {coupon.code} a été appliqué avec succès !",
+            'coupon_code': coupon.code,
+            'discount_type': coupon.discount_type,
+            'discount_value': float(coupon.discount_value),
+            'discount_amount': round(discount_amount, 2),
+            'subtotal': round(subtotal, 2),
+            'total': round(total, 2),
         })
 
-    return JsonResponse({"success": False, "message": "Requête invalide."})
+    return JsonResponse({'success': False, 'message': "Méthode non autorisée."})
+
 
 @login_required
 def remove_coupon(request):
-    if request.method == "POST":
-        cart = Cart.objects.get(user=request.user)
-        cart.coupon = None
-        cart.save()
-        return JsonResponse({
-            "success": True,
-            "message": "🗑 Coupon retiré.",
-            "discount": "0",
-            "total_after_discount": str(round(cart.get_total_without_discount(), 2)),
-        })
-    return JsonResponse({"success": False, "message": "Requête invalide."})
+    """
+    Supprime le coupon de la session et du panier.
+    """
+    if COUPON_SESSION_ID in request.session:
+        del request.session[COUPON_SESSION_ID]
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart.coupon = None
+    cart.save()
+    messages.info(request, "Le code promo a été retiré.")
+    return redirect('cart_detail')
 
-
-def confirm_reservation(reservation):
-    photobooth = reservation.photobooth
-    photobooth.available -= reservation.quantity  # ou reservation.quantite selon ton champ
-    if photobooth.available < 0:
-        photobooth.available = 0
-    photobooth.save()
-    reservation.status = Reservation.CONFIRMED
-    reservation.save()
-
-@login_required
 def get_cart_item_count(request):
-    """
-    Renvoie le nombre total d'articles dans le panier de l'utilisateur actuel.
-    """
     if request.user.is_authenticated:
-        try:
-            cart = Cart.objects.get(user=request.user)
-            return JsonResponse({'success': True, 'count': cart.cartitem_set.count()})
-        except Cart.DoesNotExist:
-            return JsonResponse({'success': True, 'count': 0})
-    return JsonResponse({'success': False, 'message': 'Utilisateur non authentifié.'}, status=401)
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        count = cart.items.count()
+    else:
+        count = 0
+    return JsonResponse({'count': count})
